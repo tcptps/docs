@@ -630,12 +630,9 @@ body.beta {
   .Docs__article {
     h1,
     .Docs__heading {
+      @extend .has-beta-pill--is-medium !optional;
       display: inline;
       position: relative;
-  
-      &:after {
-        @include beta-pill;
-      }
     }
     h1:after {
       top: -5px;
