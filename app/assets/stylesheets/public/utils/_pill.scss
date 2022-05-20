@@ -21,14 +21,15 @@ $pills: (
   position: relative;
   right: -8px;
   text-transform: uppercase;
-  top: -3px;
 
   @if $size == medium {
     font-size: 11px;
     padding: 3px 7px;
+    top: -8px;
   } @else {
     font-size: 8px;
     padding: 3px 5px;
+    top: -3px;
   }
 }
 

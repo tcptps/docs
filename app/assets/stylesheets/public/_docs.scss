@@ -628,14 +628,10 @@ a.Docs__example-repo {
 
 body.beta {
   .Docs__article {
-    h1,
-    .Docs__heading {
-      @extend .has-beta-pill--is-medium !optional;
-      display: inline;
-      position: relative;
-    }
-    h1:after {
-      top: -5px;
+    .column1 {
+      h1:first-child {
+        @extend .has-beta-pill--is-medium !optional;
+      }
     }
   }
 }
