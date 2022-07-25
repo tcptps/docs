@@ -6,7 +6,7 @@ The [Elastic CI Stack for AWS](https://github.com/buildkite/elastic-ci-stack-for
 
 {:toc}
 
-## Prerequisites and requirements
+## Before you start
 
 Most Elastic CI Stack features are supported on both Linux and Windows.
 The following AMIs are available in all the supported regions:
@@ -43,7 +43,7 @@ The Elastic CI Stack template deploys several billable Amazon services that do n
 | CloudWatch Metrics              | Metrics recorded by Lambda scaler                                                             | ☑️        |
 | S3                              | Charging based on storage and transfers in/and out of the secrets bucket (on by default) | ❌        |
 
-Buildkite services are billed according to your [subscription tier](https://buildkite.com/pricing).
+Buildkite services are billed according to your [plan](https://buildkite.com/pricing).
 
 ## Launching the stack
 
@@ -59,7 +59,7 @@ Click _Launch Stack_ :red_button:
 
 After clicking _Next_, configure the stack using your Buildkite agent token:
 
-<%= image "aws-parameters.png", size: "#{1019/2}x#{392/2}", alt: "AWS Parameters" %>
+<%= image "aws-parameters.png", size: "#{2200/2}x#{1934/2}", alt: "AWS Parameters" %>
 
 If you don't know your agent token, there is a _Reveal Agent Token_ button available on the right-hand side of the [Agents page](https://buildkite.com/organizations/-/agents):
 
@@ -69,14 +69,15 @@ By default the stack uses a job queue of `default`, but you can specify any othe
 
 Review the parameters, see [Elastic CI Stack for AWS Parameters](/docs/agent/v3/elastic_ci_aws/parameters) for more details.
 
-Once you're ready, check both checkboxes:
+Once you're ready, check these three checkboxes:
 
+* I acknowledge that AWS CloudFormation might create IAM resources.
 * I acknowledge that AWS CloudFormation might create IAM resources with custom names.
 * I acknowledge that AWS CloudFormation might require the following capability: `CAPABILITY_AUTO_EXPAND`
 
 Then click _Create stack_:
 
-<%= image "aws-create-stack.png", size: "#{1257/2}x#{455/2}", alt: "AWS Create Stack Button" %>
+<%= image "aws-create-stack.png", size: "#{2728/2}x#{1006/2}", alt: "AWS Create Stack Button" %>
 
 After creating the stack, Buildkite takes you to the [CloudFormation console](https://console.aws.amazon.com/cloudformation/home). Click the _Refresh_ icon in the top right hand corner of the screen until you see the stack status is `CREATE_COMPLETE`.
 
@@ -86,7 +87,7 @@ You now have a working Elastic CI Stack ready to run builds! :tada:
 
 ## Running your first build
 
-We’ve created a sample [bash-parallel-example sample pipeline](https://github.com/buildkite/bash-parallel-example) for you to test with your new autoscaling stack. Click the _Add to Buildkite_ button below (or on the [GitHub Readme](https://github.com/buildkite/bash-parallel-example)):
+We've created a sample [bash-parallel-example sample pipeline](https://github.com/buildkite/bash-parallel-example) for you to test with your new autoscaling stack. Click the _Add to Buildkite_ button below (or on the [GitHub Readme](https://github.com/buildkite/bash-parallel-example)):
 
 <a class="inline-block" href="https://buildkite.com/new?template=https://github.com/buildkite/bash-parallel-example" target="_blank" rel="nofollow"><img src="https://buildkite.com/button.svg" alt="Add Bash Example to Buildkite" class="no-decoration" width="160" height="30"></a>
 

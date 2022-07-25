@@ -1,4 +1,4 @@
-# Skipping builds
+# Skipping Builds
 
 Build skipping allows you to avoid unnecessary rebuilds, conserving resources and freeing up agents.
 
@@ -30,19 +30,22 @@ To cancel running builds on the same branch:
 
 You can also configure these options using the [REST API](/docs/apis/rest-api/pipelines#create-a-yaml-pipeline).
 
-## Manually cancel jobs and skip to next step
+## Manually cancel a job
 
-If your pipeline has multiple command steps, you can manually cancel a step, and Buildkite will proceed to the next step. This does not cause the build to fail.
+If your pipeline has multiple command steps, you can manually cancel a step, which causes the build to fail.
+
+If you do *not* want the build to fail when you cancel a specific step, you can set [`soft_fail`](/docs/pipelines/command-step#soft-fail-attributes).
+
+To manually cancel a job:
 
 1. From your Buildkite dashboard, select your pipeline.
 2. Select the running build.
 3. Select the job (step) you want to cancel.
 4. Select *Cancel*.
 
-
 ## Ignore a commit
 
-Some code changes, such as editing a Readme, may not require a Buildkite build. If you want Buildkite to ignore a commit, add `[ci skip]` or `[skip ci]` anywhere in the commit message.
+Some code changes, such as editing a Readme, may not require a Buildkite build. If you want Buildkite to ignore a commit, add `[ci skip]`,`[skip ci]`, `[ci-skip]`, or `[skip-ci]` anywhere in the commit message.
 
 For example, the following commit message will cause Buildkite to ignore the commit and not create a corresponding build:
 
@@ -64,7 +67,7 @@ Fix readme typos
 For more advanced build filtering and commit skipping, see the [Using conditionals](/docs/pipelines/conditionals) guide.
 
 <div class="Docs__troubleshooting-note">
-  <h3>Skipping Commits with Bitbucket Server</h3>
+  <h3>Skipping commits with Bitbucket Server</h3>
   <p>Not all webhooks from Bitbucket Server contain the commit message. When a commit message is not included in a webhook, the build will run.</p>
 </div>
 

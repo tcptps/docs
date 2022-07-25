@@ -22,7 +22,7 @@ Both the REST API and GraphQL API can be used to create a pipeline programmatica
 
 There are two ways to define steps in your pipeline: using the YAML step editor in Buildkite or with a `pipeline.yml` file. The web steps visual editor is still available if you haven't migrated to [YAML Steps](https://buildkite.com/changelog/99-introducing-the-yaml-steps-editor) but will be deprecated in the future.
 
-If you have not yet migrated to YAML Steps, you can do on your pipeline's settings page. See the [Migrating to YAML Steps guide](/docs/tutorials/pipeline-upgrade) for more information about the changes and the migration process.
+If you have not yet migrated to YAML Steps, you can do so on your pipeline's settings page. See the [Migrating to YAML Steps guide](/docs/tutorials/pipeline-upgrade) for more information about the changes and the migration process.
 
 However you add steps to your pipeline, keep in mind that steps may run on different agents. It is good practice to install your dependencies in the same step that you run them.
 
@@ -56,7 +56,7 @@ To add steps using the YAML editor, click the 'Edit Pipeline' button on the Pipe
 
 Starting your YAML with the `steps` object, you can add as many steps as you require of each different type. Quick reference documentation and examples for each step type can be found in the sidebar on the right.
 
-### Pipeline.yml file
+### `pipeline.yml` file
 
 Before getting started with a `pipeline.yml` file, you'll need to tell Buildkite where it will be able to find your steps.
 
@@ -105,6 +105,11 @@ For more example steps and detailed configuration options, see the example `pipe
 
 If your pipeline has more than one step and you have multiple agents available to run them, they will automatically run at the same time. If your steps rely on running in sequence, you can separate them with [wait steps](/docs/pipelines/wait-step). This will ensure that any steps before the 'wait' are completed before steps after the 'wait' are run.
 
+<div class="Docs__troubleshooting-note">
+  <h3>Explicit dependencies in uploaded steps </h3>
+  <p>If a step <a href="/docs/pipelines/dependencies">depends</a> on an upload step, then all steps uploaded by that step become dependencies of the original step. For example, if step B depends on step A, and step A uploads step C, then step B will also depend on step C.</p>
+</div>
+
 When a step is run by an agent, it will be run with a clean checkout of the pipeline's repository. If your commands or scripts rely on the output from previous steps, you will need to either combine them into a single script or use [artifacts](/docs/pipelines/artifacts) to pass data between steps. This enables any step to be picked up by any agent and run steps in parallel to speed up your build.
 
 ## Build states
@@ -147,7 +152,7 @@ Differentiating between `broken`, `skipped` and `canceled` states:
 
 <%= render_markdown partial: 'pipelines/job_states' %>
 
-Each job in a build also has a footer that displays exit status information. It may include exit signal reason, which indicates which indicates whether the Buildkite agent stopped or the job was cancelled.
+Each job in a build also has a footer that displays exit status information. It may include exit signal reason, which indicates whether the Buildkite agent stopped or the job was cancelled.
 
 <section class="Docs__troubleshooting-note">
   <p>Exit status information available in the <a href="/docs/apis/graphql-api">GraphQL API</a> but not the <a href="/docs/apis/rest-api">REST API</a>.</p>
@@ -155,7 +160,7 @@ Each job in a build also has a footer that displays exit status information. It 
 
 ## Example pipeline
 
-Here’s a more complete example based on [the Buildkite agent’s build pipeline](https://github.com/buildkite/agent/blob/master/.buildkite/pipeline.yml). It contains script commands, wait steps, block steps, and automatic artifact uploading:
+Here's a more complete example based on [the Buildkite agent's build pipeline](https://github.com/buildkite/agent/blob/master/.buildkite/pipeline.yml). It contains script commands, wait steps, block steps, and automatic artifact uploading:
 
 ```yaml
 steps:
@@ -201,7 +206,7 @@ steps:
 
 ## Step types
 
-There are five different step types you can use in your Buildkite pipelines. Click through each step type for detailed usage documentation:
+Buildkite pipelines are made up of the following step types:
 
 * [Command Step](/docs/pipelines/command-step)
 * [Wait Step](/docs/pipelines/wait-step)
@@ -220,13 +225,13 @@ steps:
     command: buildkite-agent pipeline upload .buildkite/deploy.yml
 ```
 
-A common use for custom file paths is when separating test and deployment steps into two separate pipelines. Both `pipeline.yml` files are stored in the same repo and both Buildkite pipelines use the same repo URL. For example, your test pipeline’s upload command could be:
+A common use for custom file paths is when separating test and deployment steps into two separate pipelines. Both `pipeline.yml` files are stored in the same repo and both Buildkite pipelines use the same repo URL. For example, your test pipeline's upload command could be:
 
 ```
 buildkite-agent pipeline upload .buildkite/pipeline.yml
 ```
 
-And your deployment pipeline’s upload command could be:
+And your deployment pipeline's upload command could be:
 
 ```
 buildkite-agent pipeline upload .buildkite/pipeline.deploy.yml

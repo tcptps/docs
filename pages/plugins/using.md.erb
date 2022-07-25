@@ -83,7 +83,7 @@ steps:
   - wait
 
   # Use the app image built above to run concurrent tests
-  - label: "\:docker\: Test %n"
+  - label: "\:docker\: Test %spawn"
     command: test.sh
     parallelism: 25
     plugins:
@@ -145,6 +145,18 @@ steps:
   - command: echo 'Hello World'
     plugins:
       - docker-compose#287293c4:
+          run: app
+```
+
+## Referencing plugins from a specific branch
+
+To test plugins you can reference the branch, for example:
+
+```yml
+steps:
+  - command: echo 'Hello World'
+    plugins:
+      - docker-compose#feature/add-new-feature:
           run: app
 ```
 

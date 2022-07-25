@@ -20,6 +20,7 @@ class Page::Renderer
     doc = add_table_of_contents(doc)
     doc = fix_curl_highlighting(doc)
     doc = add_code_filenames(doc)
+    doc = init_responsive_tables(doc)
     doc.to_html.html_safe
   end
 
@@ -83,9 +84,9 @@ class Page::Renderer
     # Second, we make them all linkable and give them the right classes.
     headings.each do |node|
       node['class'] = 'Docs__heading'
-      node.add_child(<<~HTML)
-        <a href="##{node['id']}" aria-hidden="true" class="Docs__heading__anchor"></a>
-      HTML
+      link = "<a class='Docs__heading__anchor' href='##{node['id']}'></a>"
+
+      node.children.wrap(link)
     end
 
     doc
@@ -96,22 +97,27 @@ class Page::Renderer
 
     # Third, we generate and replace the actual toc.
     doc.search('./p').each do |node|
-      next unless node.text == '{:toc}'
+      toc = '{:toc}'
+      notoc = '{:notoc}'
 
-      if headings.empty?
+      next unless [toc, notoc].include? node.text
+
+      if headings.empty? or node.text == notoc
         node.replace('')
       else
+        html_list_items = headings.map {|heading|
+          <<~HTML.strip
+            <li class="Toc__list-item"><a class="Toc__link" href="##{heading['id']}">#{heading.text.strip}</a></li>
+          HTML
+        }.join("").strip
+        
         node.replace(<<~HTML.strip)
-          <div class="Docs__toc">
-            <div class="Docs__toc__sticky">
-              <p><strong>On this page:</strong></p>
-              <ul class="Docs__toc__list">
-                #{headings.map {|heading|
-                  %{<li><a href="##{heading['id']}">#{heading.text.strip}</a></li>}
-                }.join("")}
-              </ul>
-            </div>
-          </div>
+          <nav class="Toc">
+            <p><strong>On this page:</strong></p>
+            <ul class="Toc__list">
+              #{html_list_items}
+            </ul>
+          </nav>
         HTML
       end
     end
@@ -136,17 +142,12 @@ class Page::Renderer
       next unless node.text.starts_with?('{: codeblock-file=')
 
       filename = node.content[/codeblock-file="(.*)"}/, 1]
+      figure = "<figure class='highlight-figure'><figcaption>#{filename}</figcaption></figure>"
 
-      figure = Nokogiri::XML::Node.new "figure", doc
-      figure["class"] = "highlight-figure"
-      caption = Nokogiri::XML::Node.new "figcaption", doc
-      caption.content = filename
-      figure.add_child(caption)
-      node.previous_element.add_previous_sibling(figure)
-      node.previous_element.parent = figure
+      node.previous_element.wrap(figure)
       node.remove
     end
-    
+
     doc
   end
 
@@ -175,4 +176,23 @@ class Page::Renderer
     
     doc
   end
+
+  def init_responsive_tables(doc)
+    doc.css('table.responsive-table').each do |table|
+      thead_ths = table.css('thead th')
+
+      unless thead_ths.empty?
+        table.search('./tbody/tr').each do |tr|
+          tr.search('./td').each_with_index do |td, i|
+            faux_th = "<th aria-hidden class=\"responsive-table__faux-th\">#{thead_ths[i].children}</th>"
+            
+            td.add_previous_sibling(faux_th)
+          end
+        end
+      end
+    end
+
+    doc
+  end
+
 end

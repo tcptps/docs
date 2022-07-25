@@ -4,13 +4,12 @@ RSpec.describe Page::Renderer do
   it "renders basic markdown" do
     md = <<~MD
       # Page title
-
       Some description
     MD
 
     html = <<~HTML
       <h1>Page title</h1>
-      
+
       <p>Some description</p>
     HTML
 
@@ -36,33 +35,25 @@ RSpec.describe Page::Renderer do
         MD
 
       html = <<~HTML
-        <div class="Docs__toc">
-          <div class="Docs__toc__sticky">
-            <p><strong>On this page:</strong></p>
-            <ul class="Docs__toc__list">
-              <li><a href="#section-1">Section 1</a></li>
-        <li><a href="#section-2">Section 2</a></li>
-            </ul>
-          </div>
-        </div>
+        <nav class="Toc">
+          <p><strong>On this page:</strong></p>
+          <ul class="Toc__list">
+            <li class="Toc__list-item"><a class="Toc__link" href="#section-1">Section 1</a></li>
+        <li class="Toc__list-item"><a class="Toc__link" href="#section-2">Section 2</a></li>
+          </ul>
+        </nav>
 
-        <h2 id="section-1" class="Docs__heading">Section 1<a href="#section-1" aria-hidden="true" class="Docs__heading__anchor"></a>
-        </h2>
+        <h2 id="section-1" class="Docs__heading"><a class="Docs__heading__anchor" href="#section-1">Section 1</a></h2>
 
-        <h3 id="section-1-subsection-1-dot-1" class="Docs__heading">Subsection 1.1<a href="#section-1-subsection-1-dot-1" aria-hidden="true" class="Docs__heading__anchor"></a>
-        </h3>
+        <h3 id="section-1-subsection-1-dot-1" class="Docs__heading"><a class="Docs__heading__anchor" href="#section-1-subsection-1-dot-1">Subsection 1.1</a></h3>
 
-        <h3 id="section-1-subsection-1-dot-2" class="Docs__heading">Subsection 1.2<a href="#section-1-subsection-1-dot-2" aria-hidden="true" class="Docs__heading__anchor"></a>
-        </h3>
+        <h3 id="section-1-subsection-1-dot-2" class="Docs__heading"><a class="Docs__heading__anchor" href="#section-1-subsection-1-dot-2">Subsection 1.2</a></h3>
 
-        <h2 id="section-2" class="Docs__heading">Section 2<a href="#section-2" aria-hidden="true" class="Docs__heading__anchor"></a>
-        </h2>
+        <h2 id="section-2" class="Docs__heading"><a class="Docs__heading__anchor" href="#section-2">Section 2</a></h2>
 
-        <h3 id="section-2-subsection-2-dot-1" class="Docs__heading">Subsection 2.1<a href="#section-2-subsection-2-dot-1" aria-hidden="true" class="Docs__heading__anchor"></a>
-        </h3>
+        <h3 id="section-2-subsection-2-dot-1" class="Docs__heading"><a class="Docs__heading__anchor" href="#section-2-subsection-2-dot-1">Subsection 2.1</a></h3>
 
-        <h3 id="section-2-subsection-2-dot-2" class="Docs__heading">Subsection 2.2<a href="#section-2-subsection-2-dot-2" aria-hidden="true" class="Docs__heading__anchor"></a>
-        </h3>
+        <h3 id="section-2-subsection-2-dot-2" class="Docs__heading"><a class="Docs__heading__anchor" href="#section-2-subsection-2-dot-2">Subsection 2.2</a></h3>
       HTML
 
       expect(Page::Renderer.render(md).strip).to eql(html.strip)
@@ -83,17 +74,14 @@ RSpec.describe Page::Renderer do
       MD
 
       html = <<~HTML
-        <div class="Docs__toc">
-          <div class="Docs__toc__sticky">
-            <p><strong>On this page:</strong></p>
-            <ul class="Docs__toc__list">
-              <li><a href="#section">Section</a></li>
-            </ul>
-          </div>
-        </div>
+        <nav class="Toc">
+          <p><strong>On this page:</strong></p>
+          <ul class="Toc__list">
+            <li class="Toc__list-item"><a class="Toc__link" href="#section">Section</a></li>
+          </ul>
+        </nav>
         
-        <h2 id="section" class="Docs__heading">Section<a href="#section" aria-hidden="true" class="Docs__heading__anchor"></a>
-        </h2>
+        <h2 id="section" class="Docs__heading"><a class="Docs__heading__anchor" href="#section">Section</a></h2>
         
         <section>
           <hgroup>
@@ -114,25 +102,21 @@ RSpec.describe Page::Renderer do
         ### Subsection
 
         ## A Title
-        
+
         ### Subsection With Custom Id
         {: id="custom-id"}
         MD
 
       html = <<~HTML
-        <h2 id="short-id" class="Docs__heading">A Super Long Section Title<a href="#short-id" aria-hidden="true" class="Docs__heading__anchor"></a>
-        </h2>
-        
-        
-        
-        <h3 id="short-id-subsection" class="Docs__heading">Subsection<a href="#short-id-subsection" aria-hidden="true" class="Docs__heading__anchor"></a>
-        </h3>
+        <h2 id="short-id" class="Docs__heading"><a class="Docs__heading__anchor" href="#short-id">A Super Long Section Title</a></h2>
 
-        <h2 id="a-title" class="Docs__heading">A Title<a href="#a-title" aria-hidden="true" class="Docs__heading__anchor"></a>
-        </h2>
-        
-        <h3 id="custom-id" class="Docs__heading">Subsection With Custom Id<a href="#custom-id" aria-hidden="true" class="Docs__heading__anchor"></a>
-        </h3>
+
+
+        <h3 id="short-id-subsection" class="Docs__heading"><a class="Docs__heading__anchor" href="#short-id-subsection">Subsection</a></h3>
+
+        <h2 id="a-title" class="Docs__heading"><a class="Docs__heading__anchor" href="#a-title">A Title</a></h2>
+
+        <h3 id="custom-id" class="Docs__heading"><a class="Docs__heading__anchor" href="#custom-id">Subsection With Custom Id</a></h3>
       HTML
 
       expect(Page::Renderer.render(md).strip).to eql(html.strip)
@@ -191,10 +175,102 @@ RSpec.describe Page::Renderer do
     MD
 
     html = <<~HTML
-      <h2 id="some-id" class="Docs__heading">This is a section<a href="#some-id" aria-hidden="true" class="Docs__heading__anchor"></a>
-      </h2>
+      <h2 id="some-id" class="Docs__heading"><a class="Docs__heading__anchor" href="#some-id">This is a section</a></h2>
     HTML
 
     expect(Page::Renderer.render(md).strip).to eql(html.strip)
+  end
+
+  describe "Responsive table" do
+    it "prepends faux th to each table cell" do
+      md = <<~MD
+        | Name   | Price    |
+        | ------ | -------- |
+        | Apple  | $4.00/kg |
+        | Orange | $5.00/kg |
+        {: class="responsive-table"}
+      MD
+
+      html_in_md = <<~HTML
+        <table class="responsive-table">
+        <thead>
+        <tr>
+        <th>Name</th>
+        <th>Price</th>
+        </tr>
+        </thead>
+        <tbody>
+        <tr>
+        <td>Apple</td>
+        <td>$4.00/kg</td>
+        </tr>
+        <tr>
+        <td>Orange</td>
+        <td>$5.00/kg</td>
+        </tr>
+        </tbody>
+        </table>
+      HTML
+
+      html = <<~HTML
+        <table class="responsive-table">
+        <thead>
+        <tr>
+        <th>Name</th>
+        <th>Price</th>
+        </tr>
+        </thead>
+        <tbody>
+        <tr>
+        <th aria-hidden class="responsive-table__faux-th">Name</th>
+        <td>Apple</td>
+        <th aria-hidden class="responsive-table__faux-th">Price</th>
+        <td>$4.00/kg</td>
+        </tr>
+        <tr>
+        <th aria-hidden class="responsive-table__faux-th">Name</th>
+        <td>Orange</td>
+        <th aria-hidden class="responsive-table__faux-th">Price</th>
+        <td>$5.00/kg</td>
+        </tr>
+        </tbody>
+        </table>
+      HTML
+
+      expect(Page::Renderer.render(md).strip).to eql(html.strip)
+      expect(Page::Renderer.render(html_in_md).strip).to eql(html.strip)
+    end
+
+    it "does't affect tables without the .responsive-table CSS class" do
+      md = <<~MD
+        | Name   | Price    |
+        | ------ | -------- |
+        | Apple  | $4.00/kg |
+        | Orange | $5.00/kg |
+      MD
+
+      html = <<~HTML
+        <table>
+        <thead>
+        <tr>
+        <th>Name</th>
+        <th>Price</th>
+        </tr>
+        </thead>
+        <tbody>
+        <tr>
+        <td>Apple</td>
+        <td>$4.00/kg</td>
+        </tr>
+        <tr>
+        <td>Orange</td>
+        <td>$5.00/kg</td>
+        </tr>
+        </tbody>
+        </table>
+      HTML
+
+      expect(Page::Renderer.render(md).strip).to eql(html.strip)
+    end
   end
 end

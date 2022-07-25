@@ -3,12 +3,16 @@
 Hooks extend or override the built-in behaviours of the Buildkite agent and
 Bootstrap binaries.
 
-Hooks can be defined in three locations: agent-wide, your pipeline’s repository,
-or in [plugins](/docs/plugins) applied to steps. For example, you could define
-an agent-wide `checkout` hook which speeds up a fresh `git clone` on a new build
+Hooks can be defined in the following locations:
+
+* On the agent
+* In your pipeline's repository
+* In [plugins](/docs/plugins) applied to steps
+
+For example, you could define an agent-wide `checkout` hook which speeds up a fresh `git clone` on a new build
 machine, a repository `pre-command` hook which sets up repository-specific
 environment variables, or a plugin `environment` hook which fetches API keys
-from a secrets’ storage service.
+from a secrets' storage service.
 
 There are two categories of hook:
 
@@ -16,15 +20,15 @@ There are two categories of hook:
 * Job Lifecycle
 
 Agent lifecycle hooks are **executed** by the Buildkite agent as part of the
-agent’s lifecycle. For example, the `pre-bootstrap` hook is executed before
-starting a job’s bootstrap process, and the `agent-shutdown` hook is executed
+agent's lifecycle. For example, the `pre-bootstrap` hook is executed before
+starting a job's bootstrap process, and the `agent-shutdown` hook is executed
 before the agent process terminates.
 
 Job lifecycle hooks are **sourced** by the Buildkite bootstrap in the different
 job phases. They are run in a per-job shell environment, and any exported
-environment variables are carried to the job’s subsequent phases and hooks. For
+environment variables are carried to the job's subsequent phases and hooks. For
 example, the `environment` hook can modify or export new environment variables
-for the job’s subsequent checkout and command phases.
+for the job's subsequent checkout and command phases. Shell options set by individual hooks, such as set `-e -o pipefail`, are not carried over to other phases or hooks.
 
 In August 2021 we changed how we refer to agent hooks to differentiate between
 the hooks feature for both the agent and bootstrap processes, and the agent
@@ -33,113 +37,112 @@ directory that agent level hooks are defined.
 
 {:toc}
 
+## Hook locations
+
+Hooks can be defined in three locations:
+
+* Agent hooks - these exist on the agent file system in a directory created by
+your agent installer and configured by the [`hooks-path`](configuration#hooks-path)
+setting. You can define both agent lifecycle and job lifecycle hooks in the
+agent hooks location. Job lifecycle hooks defined here will be run for every job
+the agent receives, from any pipeline.
+* Repository hooks - these exist in your pipeline repository's
+`.buildkite/hooks` directory and can define job lifecycle hooks. Job lifecycle
+hooks defined here will be run for every pipeline that uses the repository.
+* Plugin hooks - these are provided by any [plugins](/docs/plugins) you've
+included in your pipeline steps and can define job lifecycle hooks. Job
+lifecycle hooks defined by a plugin will only be run for the step that includes
+them. Plugins can be *vendored* (if they are already present in the repository,
+and included using a relative path) or *non-vendored* (when they are included
+from elsewhere), which affects the order they are run in.
+
+### Agent hooks
+
+Every agent installer creates a hooks directory containing a set of
+sample hooks. You can find the location of your agent hooks directory in your
+platform's installation documentation.
+
+To get started with agent hooks copy the relevant example script and remove the
+`.sample` file extension.
+
+See [agent lifecycle hooks](#agent-lifecycle-hooks) and
+[job lifecycle hooks](#job-lifecycle-hooks) for the hook types that can be
+defined in the agent hooks directory.
+
+### Repository hooks
+
+Repository hooks allow you to execute repository-specific scripts. Repository
+hooks live alongside your repository's source code under the `.buildkite/hooks`
+directory.
+
+To get started, create a shell script in `.buildkite/hooks` named
+`post-checkout`. It will be sourced and run after your repository has been
+checked out as part of every job for any pipeline that uses this repository.
+
+You can define any of the [job lifecycle hooks](#job-lifecycle-hooks) whose
+`Order` includes *Repository*.
+
+### Plugin hooks
+
+Plugin hooks allow plugins you've defined in your Pipeline Steps to override
+default behavior.
+
+See the [plugin documentation](/docs/plugins) for how to implement plugin hooks
+and [job lifecycle hooks](#job-lifecycle-hooks) for the list of hook types that
+a plugin can define.
+
 ## Agent lifecycle hooks
 
-<table>
-  <thead>
-    <tr>
-        <th>Hook</th>
-        <th>Location Order</th>
-        <th>Description</th>
-    </tr>
-  </thead>
-  <tbody>
-    <tr>
-      <td style="white-space: nowrap"><code>pre-bootstrap</code></td>
-      <td style="white-space: nowrap">Agent</td>
-      <td>
-        <p>Executed before any job is started. Useful for <a href="/docs/agent/v3/securing#strict-checks-using-a-pre-bootstrap-hook">adding strict checks</a> before jobs are permitted to run.</p>
-        <p>The proposed job command and environment is written to a file and
-        the path to this file provided in the <code>BUILDKITE_ENV_FILE</code>
-        environment variable. Use the contents of this file to determine whether
-        to permit the job to run on this agent.</p>
-        <p>If the <code>pre-bootstrap</code> hook terminates with an exit code
-        of <code>0</code>, the job is permitted to run. Any other exit code
-        results in the job being rejected, and job failure being reported to the
-        Buildkite API.</p>
-        </td></tr>
-    <tr>
-      <td style="white-space: nowrap"><code>agent-shutdown</code></td>
-      <td style="white-space: nowrap">Agent</td>
-      <td>Executed when the agent shuts down. Useful for performing cleanup
-      tasks for the entire agent, outside of the job lifecycle.</td></tr>
-  </tbody>
-</table>
+| Hook             | Location Order | Description |
+| ---------------- | -------------- | ----------- |
+| `pre-bootstrap`  | <span class="add-icon-agent">Agent</span> | Executed before any job is started. Useful for [adding strict checks](/docs/agent/v3/securing#strict-checks-using-a-pre-bootstrap-hook) before jobs are permitted to run.<br /><br />The proposed job command and environment is written to a file and the path to this file provided in the `BUILDKITE_ENV_FILE` environment variable. Use the contents of this file to determine whether to permit the job to run on this agent.<br /><br />If the <code>pre-bootstrap</code> hook terminates with an exit code of `0`, the job is permitted to run. Any other exit code results in the job being rejected, and job failure being reported to the Buildkite API. |
+| `agent-shutdown` | <span class="add-icon-agent">Agent</span> | Executed when the agent shuts down. Useful for performing cleanup tasks for the entire agent, outside of the job lifecycle. |
+{: class="table table--no-wrap"}
 
 ### Creating agent lifecycle hooks
 
-Agent lifecycle hooks can be written in the programming language of your choice
-and are executed by the Buildkite agent. See the documentation for each agent
-lifecycle hook for details on the interface between them and the Buildkite
-agent.
-
+The Buildkite agent executes agent lifecycle hooks.
 These hooks can only be defined in the [agent `hooks-path`](#hook-locations-agent-hooks) directory.
+Agent lifecycle hooks can be executables written in any programming language.
+On Unix-like systems (such as Linux and macOS), hooks must be files that are executable by the user the agent is running as.
+
+Use agent lifecycle hooks to prepare for or clean up after all jobs that may run.
+For example, use `pre-bootstrap` to block unwanted jobs from running or use `agent-shutdown` to tear down a service after all jobs are finished.
+If your hook uses details about any individual job to run, prefer [job lifecycle hooks](#job-lifecycle-hooks) for those tasks instead.
+
+The agent exports few environment variables to agent lifecycle hooks.
+Read the [agent lifecycle hooks table](#agent-lifecycle-hooks) for details on the interface between the agent and each hook type.
 
 ## Job lifecycle hooks
 
 The following is a complete list of available job hooks, and the order in which
 they are run as part of each job:
 
-<table>
-  <thead>
-    <tr>
-        <th>Hook</th>
-        <th>Location Order</th>
-        <th>Description</th>
-    </tr>
-  </thead>
-  <tbody>
-    <tr>
-      <td style="white-space: nowrap"><code>environment</code></td>
-      <td style="white-space: nowrap">Agent, Plugin</td>
-      <td>Runs before all other hooks. Useful for <a href="/docs/pipelines/secrets#storing-secrets-in-environment-hooks">exposing secret keys</a>.</td></tr>
-    <tr>
-      <td style="white-space: nowrap"><code>pre-checkout</code></td>
-      <td style="white-space: nowrap">Agent, Plugin</td>
-      <td>Runs before checkout.</td></tr>
-    <tr>
-      <td style="white-space: nowrap"><code>checkout</code></td>
-      <td style="white-space: nowrap">Plugin, Agent</td>
-      <td>Overrides the default <code>git checkout</code> behavior.<br><em>Note:</em> As of Agent v3.15.0, if multiple checkout hooks are found, only the first will be run.</td></tr>
-    <tr>
-      <td style="white-space: nowrap"><code>post-checkout</code></td>
-      <td style="white-space: nowrap">Agent, Repository, Plugin</td>
-      <td>Runs after checkout.</td></tr>
-    <tr>
-      <td style="white-space: nowrap"><code>pre-command</code></td>
-      <td style="white-space: nowrap">Agent, Repository, Plugin</td>
-      <td>Runs before the build command.</td></tr>
-    <tr>
-      <td style="white-space: nowrap"><code>command</code></td>
-      <td style="white-space: nowrap">Plugin, Repository, Agent</td>
-      <td>Overrides the default command running behavior. If multiple command hooks are found, only the first will be run.</td></tr>
-    <tr>
-      <td style="white-space: nowrap"><code>post-command</code></td>
-      <td style="white-space: nowrap">Agent, Repository, Plugin</td>
-      <td>Runs after the command.</td></tr>
-    <tr>
-      <td style="white-space: nowrap"><code>pre-artifact</code></td>
-      <td style="white-space: nowrap">Agent, Repository, Plugin</td>
-      <td>Runs before artifacts are uploaded, if an artifact upload pattern was defined for the job.</td></tr>
-    <tr>
-      <td style="white-space: nowrap"><code>post-artifact</code></td>
-      <td style="white-space: nowrap">Agent, Repository, Plugin</td>
-      <td>Runs after artifacts have been uploaded, if an artifact upload pattern was defined for the job.</td></tr>
-    <tr>
-      <td style="white-space: nowrap"><code>pre-exit</code></td>
-      <td style="white-space: nowrap">Agent, Repository, Plugin</td>
-      <td>Runs before the job finishes. Useful for performing cleanup tasks.</td></tr>
-  </tbody>
-</table>
+| Hook            | Location Order | Description |
+| --------------- | -------------- | ----------- |
+| `environment`   | <span class="add-icon-agent">Agent</span><br /><span class="add-icon-plugin">Non-vendored plugin</span><br /><span class="add-icon-plugin">Vendored plugin</span>                                                          | Runs before all other hooks. Useful for [exposing secret keys](/docs/pipelines/secrets#storing-secrets-in-environment-hooks). |
+| `pre-checkout`  | <span class="add-icon-agent">Agent</span><br /><span class="add-icon-plugin">Non-vendored plugin</span><br /><span class="add-icon-plugin">Vendored plugin</span>                                                          | Runs before checkout. |
+| `checkout`      | <span class="add-icon-plugin">Non-vendored plugin</span><br /><span class="add-icon-plugin">Vendored plugin</span><br /><span class="add-icon-agent">Agent</span>                                                          | Overrides the default git checkout behavior.<br>*Note:* As of Agent v3.15.0, if multiple checkout hooks are found, only the first will be run. |
+| `post-checkout` | <span class="add-icon-agent">Agent</span><br /><span class="add-icon-repository">Repository</span><br /><span class="add-icon-plugin">Non-vendored plugin</span><br /><span class="add-icon-plugin">Vendored plugin</span> | Runs after checkout. |
+| `pre-command`   | <span class="add-icon-agent">Agent</span><br /><span class="add-icon-repository">Repository</span><br /><span class="add-icon-plugin">Non-vendored plugin</span><br /><span class="add-icon-plugin">Vendored plugin</span> | Runs before the build command |
+| `command`       | <span class="add-icon-plugin">Non-vendored plugin</span><br /><span class="add-icon-plugin">Vendored plugin</span><br /><span class="add-icon-repository">Repository</span><br /><span class="add-icon-agent">Agent</span> | Overrides the default command running behavior. If multiple command hooks are found, only the first will be run. |
+| `post-command`  | <span class="add-icon-agent">Agent</span><br /><span class="add-icon-repository">Repository</span><br /><span class="add-icon-plugin">Non-vendored plugin</span><br /><span class="add-icon-plugin">Vendored plugin</span> | Runs after the command. |
+| `pre-artifact`  | <span class="add-icon-agent">Agent</span><br /><span class="add-icon-repository">Repository</span><br /><span class="add-icon-plugin">Non-vendored plugin</span><br /><span class="add-icon-plugin">Vendored plugin</span> | Runs before artifacts are uploaded, if an artifact upload pattern was defined for the job. |
+| `post-artifact` | <span class="add-icon-agent">Agent</span><br /><span class="add-icon-repository">Repository</span><br /><span class="add-icon-plugin">Non-vendored plugin</span><br /><span class="add-icon-plugin">Vendored plugin</span> | Runs after artifacts have been uploaded, if an artifact upload pattern was defined for the job. |
+| `pre-exit`      | <span class="add-icon-agent">Agent</span><br /><span class="add-icon-repository">Repository</span><br /><span class="add-icon-plugin">Non-vendored plugin</span><br /><span class="add-icon-plugin">Vendored plugin</span> | Runs before the job finishes. Useful for performing cleanup tasks. |
+{: class="table table--no-wrap"}
 
 ### Creating job lifecycle hooks
 
-Job lifecycle hooks run for every job an agent accepts. They are shell
-scripts you can use to run commands and export environment variables. These
-hooks have access to all the standard [Buildkite environment variables](/docs/pipelines/environment-variables).
+Job lifecycle hooks are sourced for every job an agent accepts.
+Use job lifecycle hooks to prepare for jobs, override default behavior, or clean up after jobs that have finished.
+For example, use the `environment` hook to set a job's environment variables or the `pre-exit` hook to delete temporary files and remove containers.
+If your hook is related to the startup or shutdown of the agent, consider [agent lifecycle hooks](#job-lifecycle-hooks) for those tasks instead.
 
-Job lifecycle hooks are copied to `$TMPDIR` directory and *sourced* by the
-agent’s default shell. This has a few implications:
+Job lifecycle hooks have access to all the standard [Buildkite environment variables](/docs/pipelines/environment-variables).
+
+Job lifecycle hooks are copied to `$TMPDIR` directory and *sourced* by the agent's default shell.
+This has a few implications:
 
 * `$BASH_SOURCE` contains the location the hook is sourced from
 * `$0` contains the location of the copy of the script that is running from `$TMPDIR`
@@ -155,7 +158,7 @@ execute them from within the shell script, and explicitly pass any Buildkite
 environment variables you need to the script when you call it.
 
 The following is an example of an `environment` hook which exports a GitHub API
-key for the pipeline’s release build step:
+key for the pipeline's release build step:
 
 ```bash
 set -eu
@@ -178,55 +181,3 @@ An example of a Windows `environment.bat` hook:
 ECHO "--- \:house_with_garden\: Setting up the environment"
 SET GITHUB_RELEASE_ACCESS_KEY='xxx'
 ```
-
-## Hook locations
-
-Hooks can be defined in three locations:
-
-* Agent hooks - these exist on the agent file system in a directory created by
-your agent installer and configured by the [`hooks-path`](configuration#hooks-path)
-setting. You can define both agent lifecycle and job lifecycle hooks in the
-agent hooks location. Job lifecycle hooks defined here will be run for every job
-the agent receives, from any pipeline.
-* Repository hooks - these exist in your pipeline repository’s
-`.buildkite/hooks` directory and can define job lifecycle hooks. Job lifecycle
-hooks defined here will be run for every pipeline that uses the repository.
-* Plugin hooks - these are provided by any [plugins](/docs/plugins) you’ve
-included in your pipeline steps and can define job lifecycle hooks. Job
-lifecycle hooks defined by a plugin will only be run for the step that includes
-them.
-
-### Agent hooks
-
-Every agent installer creates a hooks directory containing a set of
-sample hooks. You can find the location of your agent hooks directory in your
-platform’s installation documentation.
-
-To get started with agent hooks copy the relevant example script and remove the
-`.sample` file extension.
-
-See [agent lifecycle hooks](#agent-lifecycle-hooks) and
-[job lifecycle hooks](#job-lifecycle-hooks) for the hook types that can be
-defined in the agent hooks directory.
-
-### Repository hooks
-
-Repository hooks allow you to execute repository-specific scripts. Repository
-hooks live alongside your repository’s source code under the `.buildkite/hooks`
-directory.
-
-To get started, create a shell script in `.buildkite/hooks` named
-`post-checkout`. It will be sourced and run after your repository has been
-checked out as part of every job for any pipeline that uses this repository.
-
-You can define any of the [job lifecycle hooks](#job-lifecycle-hooks) whose
-`Order` includes *Repository*.
-
-### Plugin hooks
-
-Plugin hooks allow plugins you’ve defined in your Pipeline Steps to override
-default behavior.
-
-See the [plugin documentation](/docs/plugins) for how to implement plugin hooks
-and [job lifecycle hooks](#job-lifecycle-hooks) for the list of hook types that
-a plugin can define.
