@@ -1,4 +1,4 @@
-# Elastic CI Stack for EC2 Mac
+# Elastic CI Stack for AWS for EC2 Mac
 
 You can run your builds on AWS EC2 Mac using Buildkite's [CloudFormation template](https://github.com/buildkite/elastic-mac-for-aws). This template creates an Auto Scaling group, launch template, and host resource group for maintaining a pool of EC2 Mac instances that run the
 Buildkite agent. Using Buildkite agents, you can run pipelines and build
@@ -85,7 +85,7 @@ You do not need to install the `buildkite-agent` in your template AMI, the
 `buildkite-agent` will be installed at boot time by the launch template's
 `UserData` script.
 
-## Step 3: Associate your AMI with a Customer managed license in AWS License Manager
+## Step 3: Associate your AMI with a customer managed license in AWS License Manager
 
 To launch an instance using a host resource group, the instance AMI must be
 associated with a *Customer managed license* in *AWS License Manager*.
@@ -198,7 +198,7 @@ EC2 Mac instances are slower to boot and terminate than Linux instances. If want
 to match your *Desired capacity* to your workload, consider configuring
 [scheduled scaling for your Auto Scaling group](https://docs.aws.amazon.com/autoscaling/ec2/userguide/schedule_time.html)
 
-## Frequently Asked Questions
+## Frequently asked questions
 
 ### My Auto Scaling group doesn't launch any instances
 
