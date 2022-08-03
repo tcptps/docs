@@ -1,7 +1,7 @@
 ---
 - - name: 'Pipelines'
     path: 'tutorials/getting-started'
-    children: 
+    children:
       - name: 'Tutorials'
         children:
           - name: 'Getting Started'
@@ -12,6 +12,8 @@
             path: 'tutorials/docker-containerized-builds'
           - name: 'Parallelizing Builds'
             path: 'tutorials/parallel-builds'
+          - name: 'Triggering Pipelines Using GitHub Actions'
+            path: 'tutorials/github-actions'
           - name: 'Migrating from Bamboo'
             path: 'tutorials/migrating-from-bamboo'
           - name: 'Using Bazel on Buildkite'
