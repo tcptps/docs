@@ -1,21 +1,19 @@
-# buildkite-agent artifact
+# `buildkite-agent artifact`
 
-<section class="Docs__troubleshooting-note">
-  <p>This page references the out-of-date Buildkite Agent v2.</p>
-  <p>For docs referencing the Buildkite Agent v3, <a href="/docs/agent/v3/cli_artifact">see the latest version of this document</a>.
-</section>
+>🚧 This page references the out-of-date Buildkite Agent v2.
+> For docs referencing the Buildkite Agent v3, <a href="/docs/agent/v3/cli_artifact">see the latest version of this document</a>.
 
-The Buildkite Agent’s `artifact` command provides support for uploading and downloading of build artifacts, allowing you to share binary data between build steps no matter the machine or network.
+The Buildkite Agent's `artifact` command provides support for uploading and downloading of build artifacts, allowing you to share binary data between build steps no matter the machine or network.
 
-See the [Using Build Artifacts](/docs/builds/artifacts) guide for a step-by-step example.
+See the [Using build artifacts](/docs/builds/artifacts) guide for a step-by-step example.
 
 {:toc}
 
 ## Uploading artifacts
 
-You can use this command in your build scripts to store artifacts in the Buildkite artifact store. The stored artifacts will then be accessible via the web interface and can be downloaded by future build steps. 
+You can use this command in your build scripts to store artifacts in the Buildkite artifact store. The stored artifacts will then be accessible using the web interface and can be downloaded by future build steps.
 
-You can also configure the agent to automatically upload artifacts based on a file pattern (see the [Using Build Artifacts guide](/docs/builds/artifacts) for details).
+You can also configure the agent to automatically upload artifacts based on a file pattern (see the [Using build artifacts guide](/docs/builds/artifacts) for details).
 
 ```
 Usage:
@@ -78,7 +76,7 @@ Uploading all the files and folders inside the `coverage` directory:
 buildkite-agent artifact upload "coverage/**/*"
 ```
 
-Uploading a file name with special characters e.g. `hello??.html`:
+Uploading a file name with special characters, for example, `hello??.html`:
 
 ```bash
 buildkite-agent artifact upload "hello\?\?.html"
@@ -101,9 +99,9 @@ cd log
 buildkite-agent artifact upload test.log
 ```
 
-Keep in mind while you’re writing your path pattern:
+Keep in mind while you're writing your path pattern:
 
-- patterns must match whole path strings, not just substrings
+- patterns must match whole path strings, not only substrings
 - there are two wildcards available that match non-separator characters (on Linux `/` is a separator character, and on Windows `\` is a separator character):
   + `*` to match a sequence of characters
   + `?` to match a single character
@@ -146,7 +144,7 @@ Example:
 
 Options:
 
-   --step value                Scope the search to a paticular step by using either its name or job ID
+   --step value                Scope the search to a particular step by using either its name or job ID
    --build value               The build that the artifacts were uploaded to [$BUILDKITE_BUILD_ID]
    --agent-access-token value  The access token used to identify the agent [$BUILDKITE_AGENT_ACCESS_TOKEN]
    --endpoint value            The Agent API endpoint (default: "https://agent.buildkite.com/v3") [$BUILDKITE_AGENT_ENDPOINT]
@@ -193,7 +191,7 @@ buildkite-agent artifact download "*.png" images/
 
 Artifact downloads support pattern-matching using the `*` character.
 
-Unlike artifact upload glob patterns, these operate over the entire path and not just between separator characters. For example, a download path pattern of `log/*` matches all files under the log directory and all subdirectories.
+Unlike artifact upload glob patterns, these operate over the entire path and not only between separator characters. For example, a download path pattern of `log/*` matches all files under the log directory and all subdirectories.
 
 There is no need to escape characters such as `?`, `[` and `]`.
 
@@ -237,7 +235,7 @@ Example:
 
 Options:
 
-   --step value                Scope the search to a paticular step by using either its name of job ID
+   --step value                Scope the search to a particular step by using either its name of job ID
    --build value               The build that the artifacts were uploaded to [$BUILDKITE_BUILD_ID]
    --agent-access-token value  The access token used to identify the agent [$BUILDKITE_AGENT_ACCESS_TOKEN]
    --endpoint value            The Agent API endpoint (default: "https://agent.buildkite.com/v3") [$BUILDKITE_AGENT_ENDPOINT]
@@ -248,10 +246,10 @@ Options:
 
 ## Using your own private AWS S3 bucket
 
-You can use the `buildkite-agent artifact` command to store artifacts in your own private Amazon S3 bucket. To do so, you’ll need to export the following environment variables using an [environment agent hook](/docs/agent/v2/hooks) (this can not be set via the Buildkite web interface, API, or during pipeline upload):
+You can use the `buildkite-agent artifact` command to store artifacts in your own private Amazon S3 bucket. To do so, you'll need to export the following environment variables using an [environment hook](/docs/agent/v2/hooks) (this can not be set using the Buildkite web interface, API, or during pipeline upload):
 
 ```bash
-export BUILDKITE_ARTIFACT_UPLOAD_DESTINATION="s3://name-of-your-s3-bucket/$BUILDKITE_JOB_ID"
+export BUILDKITE_ARTIFACT_UPLOAD_DESTINATION="s3://name-of-your-s3-bucket/$BUILDKITE_PIPELINE_ID/$BUILDKITE_BUILD_ID/$BUILDKITE_JOB_ID"
 export BUILDKITE_S3_DEFAULT_REGION="eu-central-1" # default: us-east-1
 ```
 
@@ -282,7 +280,7 @@ You will need to make sure your agent instances have the following IAM policy to
 }
 ```
 
-If you’re running your agents on an AWS EC2 Instance we suggest adding the above policy to [an IAM Role](http://docs.aws.amazon.com/AWSEC2/latest/UserGuide/iam-roles-for-amazon-ec2.html). If you're running outside of AWS, or you’re unable to use an instance role, you can export `BUILDKITE_S3_ACCESS_KEY_ID` and `BUILDKITE_S3_SECRET_ACCESS_KEY` containing the [Access Key credentials](http://docs.aws.amazon.com/IAM/latest/UserGuide/id_credentials_access-keys.html) for an IAM user. See the [Managing Pipeline Secrets](/docs/pipelines/secrets) documentation for how to securely set up these environment variables.
+If you're running your agents on an AWS EC2 Instance we suggest adding the above policy to [an IAM Role](http://docs.aws.amazon.com/AWSEC2/latest/UserGuide/iam-roles-for-amazon-ec2.html). If you're running outside of AWS, or you're unable to use an instance role, you can export `BUILDKITE_S3_ACCESS_KEY_ID` and `BUILDKITE_S3_SECRET_ACCESS_KEY` containing the [Access Key credentials](http://docs.aws.amazon.com/IAM/latest/UserGuide/id_credentials_access-keys.html) for an IAM user. See the [Managing pipeline secrets](/docs/pipelines/secrets) documentation for how to securely set up these environment variables.
 
 By default the agent will create objects with `public-read` permissions, so that clicking on an artifact link in the Buildkite web interface can go directly to the S3 object to be viewed in the browser. You can set this to private by exporting the following environment variable:
 
@@ -298,4 +296,4 @@ export BUILDKITE_S3_ACCESS_URL="https://buildkite-artifacts.example.com/"
 
 ## Using your own private Google Cloud bucket
 
-You can use the `buildkite-agent artifact` command to store artifacts in your own private Google Cloud storage bucket. For instructions for how to set this up, see our [Google Cloud Installation Guide](/docs/agent/v2/gcloud#uploading-artifacts-to-google-cloud-storage).
+You can use the `buildkite-agent artifact` command to store artifacts in your own private Google Cloud Storage bucket. For instructions for how to set this up, see our [Google Cloud installation guide](/docs/agent/v2/gcloud#uploading-artifacts-to-google-cloud-storage).

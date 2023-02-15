@@ -1,6 +1,6 @@
-# Writing Build Scripts
+# Writing build scripts
 
-One of the most common actions that Buildkite steps perform is running shell scripts. These scripts are checked in alongside your code and `pipeline.yml` file. 
+One of the most common actions that Buildkite steps perform is running shell scripts. These scripts are checked in alongside your code and `pipeline.yml` file.
 
 The [Buildkite Agent](/docs/agent/v3) will run your scripts, capture and report the log output, and use the exit status to mark each job, as well as the overall build, as passed or failed.
 
@@ -20,11 +20,11 @@ When writing Bash shell scripts there are a number of options you can set to hel
   </tr>
   <tr>
     <th><code>u</code></th>
-    <td>Exit script immediately if an undefined variable is used (e.g. <code>echo "$UNDEFINED_ENV_VAR"</code>).</td>
+    <td>Exit script immediately if an undefined variable is used (for example, <code>echo "$UNDEFINED_ENV_VAR"</code>).</td>
   </tr>
   <tr>
     <th><code>o pipefail</code></th>
-    <td>Ensure Bash pipelines (e.g. <code>cmd | othercmd</code>) return a non-zero status if any of the commands fail, rather than returning the exit status of the last command in the pipeline.</td>
+    <td>Ensure Bash pipelines (for example, <code>cmd | othercmd</code>) return a non-zero status if any of the commands fail, rather than returning the exit status of the last command in the pipeline.</td>
   </tr>
   <tr>
     <th><code>x</code></th>
@@ -33,7 +33,7 @@ When writing Bash shell scripts there are a number of options you can set to hel
   </tbody>
 </table>
 
-Bash’s built-in `set` command can be used to enable and disable options. For example, `set -u` enables the `u` option, and `set +u` disables the `u` option. You can also set multiple options at once, for example `set -ue` enables both the `u` and `e` options.
+Bash's built-in `set` command can be used to enable and disable options. For example, `set -u` enables the `u` option, and `set +u` disables the `u` option. You can also set multiple options at once, for example `set -ue` enables both the `u` and `e` options.
 
 The following example enables the most commonly used options for build scripts:
 
@@ -45,12 +45,10 @@ set -euo pipefail
 run_tests
 ```
 
-For a full list of options, see the [Bash Reference Manual](https://www.gnu.org/software/bash/manual/html_node/The-Set-Builtin.html).
+For a full list of options, see the [Bash reference manual](https://www.gnu.org/software/bash/manual/html_node/The-Set-Builtin.html).
 
-<section class="Docs__troubleshooting-note">
-  <h3>Unbound variable errors</h3>
-  <p>Note that while enabling the <code>u</code> option is generally a good default to use for all build scripts, it can cause some tools like <a href="https://rvm.io">rvm</a> to fail with “unbound variable” errors. If you encounter errors, you can either remove <code>u</code> from the list of options, or you can surround the command causing the error with <code>set +u</code> and <code>set -u</code> to temporarily disable the option.</p>
-</section>
+>🚧 Unbound variable errors
+> Note that while enabling the <code>u</code> option is generally a good default to use for all build scripts, it can cause some tools like <a href="https://rvm.io">rvm</a> to fail with “unbound variable” errors. If you encounter errors, you can either remove <code>u</code> from the list of options, or run the tool causing the error wrapped in <code>set +u</code> and <code>set -u</code> to remove the option for only that command. For example: <code>set +u; rvm xxx; set -u</code>.
 
 ## Capturing exit status
 
@@ -98,9 +96,13 @@ Using this technique gives you control over the exit code of your script, and th
 
 The first step in debugging your build script is to view the environment variables from the Buildkite web interface:
 
-<%= image "viewing-job-environment-variables.png", width: 1044/2, height: 542/2, alt: 'Screenshot of viewing a job’s environment tab' %>
+<%= image "viewing-job-environment-variables.png", width: 1044/2, height: 542/2, alt: "Screenshot of viewing a job's environment tab" %>
 
-There may be additional environment variables available in your build job that don’t appear in this list, such as ones set by your own [agent hooks](/docs/agent/v3/hooks). To debug these, you can print them using `echo $SOME_VAR` before the command you're wanting to run. For example:
+There may be additional environment variables available in your build job that
+don't appear in this list, such as ones set by your
+[job lifecycle hooks](/docs/agent/v3/hooks#job-lifecycle-hooks).
+To debug these, you can print them using `echo $SOME_VAR` before the command
+you're wanting to run. For example:
 
 ```bash
 #!/bin/bash
@@ -112,10 +114,8 @@ some_command
 
 If you require more environment information, you can execute `env` to print out all the environment variable names and their values. If you use `env` you should filter the output using a tool such as `grep` or `egrep`, to ensure you don't leak private keys or other information.
 
-<section class="Docs__troubleshooting-note">
-  <h3>Security recommendation</h3>
-  <p>If you use environment variables to define sensitive data such as API keys or Secret Access Keys, you should always filter the output of <code>env</code> to ensure you’re not exposing any secrets in your build log.</p>
-</section>
+>🚧 Security recommendation
+> If you use environment variables to define sensitive data such as API keys or Secret Access Keys, you should always filter the output of <code>env</code> to ensure you're not exposing any secrets in your build log.
 
 For example, the following prints all environment variable names and values containing the words "git" or "node", using a case-insensitive search:
 
@@ -127,7 +127,7 @@ env | grep -i -E 'git|node'
 some_command
 ```
 
-Enabling Bash’s debug mode using `set -x` can also help to debug your build scripts. This debug output can be very noisy, so it’s best enable this before the command you want to debug, and then to disable it straight after. For example:
+Enabling Bash's debug mode using `set -x` can also help to debug your build scripts. This debug output can be very noisy, so it's best enable this before the command you want to debug, and then to disable it straight after. For example:
 
 ```bash
 #!/bin/bash
@@ -144,6 +144,8 @@ For more information about the `x` option and debugging in general, see the [Bas
 ## Help with linting and debugging
 
 To check your shell scripts for common errors and mistakes we highly recommend using a linting tool like [Shellcheck](http://www.shellcheck.net). Shellcheck is a shell script linter with a web-based front-end, a command line tool, and integrates directly with most code editors.
+
+<!--alex ignore gals-man -->
 
 For an explanation of a shell code snippet, the [explainshell.com](http://explainshell.com) tool is extremely useful. Explainshell can tell you, in plain English, what a line of shell code does. It also integrates the man pages of common tools such as `ssh` and `git`.
 

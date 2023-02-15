@@ -1,156 +1,76 @@
-$Docs__bp_stacked: 600px;
+$color-green: rgb(3, 165, 98);
 
 .Docs__page-container {
-  padding-top: 20px;
+  @media (min-width: $screen-md) { 
+    padding-top: $header-height + 30px; 
+  }
 }
 
 .Docs__page-container__inner {
-  display: flex;
-  @media (max-width: $Docs__bp_stacked) { display: block; }
+  margin-top: 30px;
+
+  @media (min-width: $screen-md) {
+    display: flex;
+    margin-top: 0;
+  }
 }
 
 .Docs__header {
-  @media (max-width: $Docs__bp_stacked) { font-size: 2rem; }
+  @media (max-width: ($screen-md - 1)) { font-size: 2rem; }
 }
 
-.Docs__nav {
-  flex: 2;
-  padding-right: 20px;
-  margin-top: .8em;
-  @media (max-width: $Docs__bp_stacked) { margin-left: -20px; margin-right: -20px; margin-bottom: 40px; padding-right: 0; }
-}
+.Search-container {
+  position: relative;
 
-.Docs__nav__section-heading {
-  margin: 20px 0 13px 0;
-  font-size: 1.1rem;
-  font-weight: bold;
-  font-style: normal;
-  font-family: inherit;
-  color: black;
+  kbd {
+    background: #efefef;
+    border-radius: 0.2rem;
+    border: 1px solid #eee;
+    color: #aaa;
+    font-size: 14px;
+    font-weight: 700;
+    padding: 4px 6px;
+    position: absolute;
+    right: 12px;
+    top: 7px;
 
-  @media (max-width: $Docs__bp_stacked) {
-    font-size: 1.4rem;
-    margin: 0;
-    padding-left: 20px;
-    padding-top: 15px;
-    padding-bottom: 15px;
-  }
-
-  &:first-of-type { margin-top: 0; }
-}
-
-.Docs__nav__section-heading + .Docs__nav__section-subheading {
-  margin-top: 15px;
-}
-
-.Docs__nav__section-subheading {
-  text-transform: uppercase;
-  color: #767676;
-  font-size: 11px;
-  line-height: 1.2;
-  margin: 15px 0 10px 0;
-  font-weight: 600;
-
-  @media (max-width: $Docs__bp_stacked) {
-    padding-left: 20px;
-  }
-}
-
-.Docs__nav__sub-nav {
-  list-style: none;
-  margin: 0;
-  padding: 0;
-  font-size: #{(15/18)}rem;
-
-  @media (max-width: $Docs__bp_stacked) {
-    font-size: 1rem;
-    line-height: 1.2;
-    padding-bottom: 20px;
-    padding-left: 20px;
-    padding-right: 20px;
-    margin-bottom: -1px;
-  }
-}
-
-.Docs__nav__sub-nav__item {
-  margin-top: 5px;
-  &:first-of-type { margin-top: 0; }
-}
-
-.Docs__nav__sub-nav__item--sub {
-  @extend .Docs__nav__sub-nav__item;
-  padding-left: 1em;
-}
-
-.Docs__nav__sub-nav__item__link {
-  font-weight: 400;
-  &.active {
-    font-weight: 600;
-    &:hover {
-      text-decoration: none;
+    @media (max-width: ($screen-md - 1)) {
+      display: none;
     }
   }
 }
 
-.Docs__nav__version-selector {
-  margin-bottom: 10px;
-  @media (max-width: $Docs__bp_stacked) {
-    margin-left: 20px;
-  }
-}
 
-.Docs__nav__section-heading--link {
-  padding: 0;
-}
+.HomeHeader__search {
+  .Search-container {
+    display: inline;
 
-.Docs__nav__section-heading-link {
-  text-decoration: none;
-  font-weight: bold;
-  color: #14CC80;
-
-  @media (max-width: $Docs__bp_stacked) {
-    display: block;
-    padding-left: 20px;
-    padding-top: 15px;
-    padding-bottom: 15px;
-    text-decoration: none;
-  }
-
-  &:hover, &:active, &:focus {
-    text-decoration: underline;
-  }
-}
-
-.Docs__nav__homebutton {
-  display: inline-block;
-  background-color: #333;
-  color: white;
-  padding-left: 20px;
-  padding-right: 20px;
-  padding-top: 15px;
-  padding-bottom: 15px;
-  margin-top: 40px;
-  font-weight: bold;
-  border-radius: 3px;
-  text-decoration: none;
-  transition: background-color 300ms;
-
-  @media (max-width: $Docs__bp_stacked) {
-    margin-left: 20px;
-  }
-
-  &:hover, &:focus, &:active {
-    background-color: black;
+    kbd {
+      right: 10px;
+      top: 17px;
+    }
   }
 }
 
 .Docs__article {
   flex: 7;
-  padding-left: 20px;
   font-weight: 400;
-  padding-bottom: 50px;
-  margin-top: -5px;
-  @media (max-width: $Docs__bp_stacked) { padding-left: 0; }
+
+  @media (min-width: $screen-md) {
+    margin-left: $sidebar-width + 30px;
+  }
+
+  @media (min-width: $screen-lg) { // TOC as side column on larger screens
+    display: grid;
+    grid-template-columns: minmax(10px, 1fr) 250px;
+    position: relative;
+    gap: 30px;
+
+    &--is-landing-page {
+      display: block;
+    }
+  }
+
   h1, h2, h3, h4, h5 {
     font-weight: bold;
     font-family: inherit;
@@ -165,80 +85,174 @@ $Docs__bp_stacked: 600px;
   h3 + p { margin-top: 0; }
   h4 { font-size: 1rem; font-weight: 600; }
   h5 { font-size: .9rem; font-weight: 600; }
-  img, svg { padding: 5px; border: 1px solid #eee; }
   img.no-decoration, .responsive-image-container.no-decoration { padding: 0; border: none; margin: 0; }
   img.emoji { padding: 0; border: none; }
-  p { max-width: 40em; }
-  @extend .TextContent;
-  hr { margin: 2.5em 0; }
   hr + h2 { margin-top: 0; }
-  th { font-weight: normal; }
+  th { font-weight:600; }
   thead th { font-weight: 600; }
   .image, img { max-width: 100%; }
   .responsive-image-container { margin: .5rem 0 2rem 0; }
-}
+  li .responsive-image-container { margin: .5rem 0 0 0; }
 
-.Docs__nav__section-heading--link + .Docs__nav__section-heading--link {
-  a { border-top: none; }
+  table.fixed-width {
+    // In general, the width of our tables within articles depends on the size of their content. This works great except
+    // when we have text such as a HTTP response snippet that includes a long unbroken string. When that happens, the
+    // table overflows outside of its bounding box and doesn't wrap or scroll nicely, causing text cropping. Use this
+    // "fixed-width" class for a table that won't overflow it's bounding box horizontally and forces text wrapping.
+
+    table-layout: fixed;
+    width: 100%;
+    th {
+      width: 25%;
+    }
+    tr {
+      width: 75%;
+    }
+  }
 }
 
 .Docs__article .Docs__api-param-eg {
   margin: .25em 0 0 0;
 }
 
-.Docs__toc {
-  p { margin-bottom: .5em; }
-  ul { margin-top: .5em; }
-}
+.Docs__attribute__table {
+  table-layout: fixed;
+  width: 100%;
 
-.Docs__note {
-  border-left: 3px solid #14CC80;
-  padding-left: 1rem;
-  font-size: #{(16/18)}rem;
-  color: #666;
-  margin-top: 1.5rem;
-  margin-bottom: 2rem;
-  p { margin: 0; }
-  .Docs__note__heading {
-    color: #14CC80;
-    font-weight: 400;
-    font-size: 1rem;
+  th {
+    word-wrap: break-word;
+
+    code {
+      white-space: normal;
+    }
   }
-  p + p { margin-top: .5rem; }
-}
 
-.Docs__note--footer-typo {
-  @extend .Docs__note;
-  margin-top: 3rem;
+  td {
+    word-wrap: break-word;
+  }
+
+  tr.importance th {
+    border-top: none;
+    font-weight: 700;
+  }
+
+  tr.optional th {
+    padding-top: 2rem;
+  }
+
+  td p:first-child { margin-top: 0; }
+
+  .Docs__attribute__link {
+    color: #ccc;
+    opacity: 0;
+    transition: all 0.2s;
+  }
+
+  &:hover {
+    .Docs__attribute__link {
+      opacity: 1.0;
+
+      &:hover {
+        color: #aaa;
+      }
+    }
+  }
+
+  small {
+    display: block;
+    font-size: 0.8em;
+    margin: 1em 0;
+  }
+
+  .comma-separated {
+    margin: 1em 0;
+
+    li {
+      display: inline;
+      margin: 0;
+
+      &:not(:last-child)::after {
+        content: ",";
+      }
+
+      &:first-child::after {
+        content: "";
+      }
+    }
+  }
+
+  .Docs__attribute__importance {
+    color: $color-brand-green;
+    margin: 5px 0;
+    text-transform: uppercase;
+    font: 300 13px $font-family;
+    letter-spacing: 1px
+  }
+
+  .Docs__attribute__env-var {
+    font-size: 0.8em;
+  }
+
+  .Docs__attribute__default {
+    font-size: 0.8em;
+  }
+
+  .Docs__attribute__example {
+    align-content: baseline;
+    display: grid;
+    gap: 0.4rem;
+    grid-template-columns: auto auto;
+    justify-content: left;
+
+    strong,
+    code {
+      font-size: 12px;
+      line-height: 1.3;
+    }
+  }
 }
 
 a.Docs__example-repo {
-  display: flex;
   align-items: top;
   border: 1px solid #ccc;
+  display: flex;
   padding: 15px;
-  &:hover, &:active { text-decoration: none; border-color: #999; }
+  text-decoration: none;
+
+  &:hover, &:active, &:focus {
+    border-color: $color-brand-green;
+    color: black;
+
+    .repo {
+      color: $color-brand-green;
+    }
+  }
+
   .icon {
     width: 22px;
     margin-right: 10px;
     flex: none;
     transform: translateY(3px);
   }
+
   .detail {
     flex: 1;
   }
+
   .description {
-    display: block;
-    font-weight: normal;
     color: currentColor;
-    font-size: #{(16/18)}rem;
-  }
-  .repo {
     display: block;
+    font-size: #{(16/18)}rem;
     font-weight: normal;
+  }
+
+  .repo {
     color: #666;
+    display: block;
     font-size: #{(14/18)}rem;
+    font-weight: normal;
     margin-top: .2rem;
+    text-decoration: underline;
   }
 }
 
@@ -261,49 +275,54 @@ a.Docs__example-repo {
   }
 }
 
-.Docs__wip-note {
-  @extend .Docs__note;
-  border-left-color: orange;
-  margin-top: 2rem;
-  margin-bottom: 2rem;
-  h1 {
-    font: inherit;
-    color: inherit;
-    font-weight: bold;
-    color: orange;
-    &:before {
-      content: '🚧 ';
-    }
-  }
-}
-
-.Docs__troubleshooting-note {
-  @extend .Docs__note;
-  border-left-color: orange;
-  margin-top: 2rem;
-  margin-bottom: 2rem;
-  h1, h3 {
-    font: inherit;
-    color: inherit;
-    font-weight: bold;
-    color: orange;
-    &:before {
-      content: '⚠️ ';
-    }
-  }
-}
-
-.Docs__heading:hover {
+.Docs__heading {
   position: relative;
+
   .Docs__heading__anchor {
-    font-size: 0;
-    line-height: 0;
+    text-decoration: none;
+
+    &:hover,
+    &:active,
+    &:focus {
+      color: black;
+    }
   }
-  .Docs__heading__anchor:before {
+
+  &:hover:before {
     content: '#';
     color: #666;
     font-size: 1rem;
     font-weight: normal;
     margin-left: .5rem;
+    position: absolute;
+    left: -25px;
+    top: 5px;
+  }
+}
+
+html {
+  scroll-padding-top: 15px;
+
+  @media (min-width: $screen-md) {
+    scroll-padding-top: $header-height + 15px;
+  }
+}
+
+body.beta {
+  .Docs__article {
+    h1,
+    .Docs__heading {
+      display: inline;
+      position: relative;
+
+      &:after {
+        @include pill;
+        @include pill-style(beta);
+        @include pill-small;
+        left: 5px;
+        position: relative;
+        top: -5px;
+      }
+    }
   }
 }

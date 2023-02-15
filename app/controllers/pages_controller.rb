@@ -1,24 +1,44 @@
 class PagesController < ApplicationController
   append_view_path "pages"
+  layout :layout_by_path
 
   def index
-    render layout: "homepage"
+    render :index, layout: "homepage"
   end
 
   def show
     @page = Page.new(view_context, params[:path])
 
     # If the page doesn't exist, throw a 404
-    raise ActionController::RoutingError.new("That documentation page does not exist") unless @page.exists?
+    raise ActionController::RoutingError.new("The documentation page `#{@page.basename}` does not exist") unless @page.exists?
 
-    # For the homepage, render with a custom layout that doesn't include the sidebar etc
-
-    # If there's another more correct version of the URL (i.e. we changed `_`
+    # If there's another more correct version of the URL (for example, we changed `_`
     # to `-`), then redirect them to where they should be.
     unless @page.is_canonical?
       redirect_to "/docs/#{@page.canonical_url}", status: :moved_permanently
     end
 
     # Otherwise, render the page (the default)
+  end
+
+  private
+
+  def beta?
+    @page && @page.beta?
+  end
+  helper_method :beta?
+
+  def landing_page?
+    @page && @page.landing_page?
+  end
+
+  def layout_by_path
+    if request.path.starts_with? "/docs/apis/graphql"
+      "graphql"
+    elsif landing_page?
+      "landing_page"
+    else
+      "application"
+    end
   end
 end

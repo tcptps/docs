@@ -1,11 +1,9 @@
 # Running Buildkite Agent on Google Cloud Platform
 
-<section class="Docs__troubleshooting-note">
-  <p>This page references the out-of-date Buildkite Agent v2.</p>
-  <p>For docs referencing the Buildkite Agent v3, <a href="/docs/agent/v3/gcloud">see the latest version of this document</a>.
-</section>
+>🚧 This page references the out-of-date Buildkite Agent v2.
+> For docs referencing the Buildkite Agent v3, <a href="/docs/agent/v3/gcloud">see the latest version of this document</a>.
 
-The Buildkite Agent can be run on [Google Cloud Platform](https://cloud.google.com). For fine control over long–lived agents, you might like to run the agent using individual VM instances on Google Compute Engine. Or run Docker–based builds using a scalable cluster of agents on the Google Container Engine via Kubernetes.
+The Buildkite Agent can be run on [Google Cloud Platform](https://cloud.google.com). For fine control over long–lived agents, you might like to run the agent using individual VM instances on Google Compute Engine. Or run Docker–based builds using a scalable cluster of agents on the Google Kubernetes Engine using Kubernetes.
 
 {:toc}
 
@@ -15,21 +13,21 @@ To run the agent on your own [Google Compute Engine](https://cloud.google.com/co
 
 Launch an instance using the latest Ubuntu LTS image [through the console](https://console.cloud.google.com/compute/instancesAdd#preconfigured-image-ubuntu-1604-xenial-v20170202):
 
-<%= image "create-an-instance.png", size: "2200x1216", alt: "Screenshot of creating a Google Compute Engine instance running Ubuntu 16.04 LTS via the Google Cloud Console" %>
+<%= image "create-an-instance.png", size: "2200x1216", alt: "Screenshot of creating a Google Compute Engine instance running Ubuntu 16.04 LTS using the Google Cloud Console" %>
 
-Connect via SSH:
+Connect using SSH:
 
-<%= image "ssh-to-instance.png", size: "2048x1220", alt: "Screenshot of connecting to a Google Compute Engine instance via the Google Cloud Console" %>
+<%= image "ssh-to-instance.png", size: "2048x1220", alt: "Screenshot of connecting to a Google Compute Engine instance using the Google Cloud Console" %>
 
 Follow the [setup instructions for Ubuntu](/docs/agent/v2/ubuntu).
 
-## Running the agent on Google Container Engine
+## Running the agent on Google Kubernetes Engine
 
-[Google Container Engine](https://cloud.google.com/container-engine) can run the agent as a [Docker](https://www.docker.com) container using [Kubernetes](https://kubernetes.io). To [run Docker–based builds](/docs/tutorials/docker-containerized-builds), ensure the container is started with a [privileged security context](https://kubernetes.io/docs/user-guide/pods/#privileged-mode-for-pod-containers) and mount the Docker socket and binary as volumes. For example:
+[Google Kubernetes Engine](https://cloud.google.com/container-engine) can run the agent as a [Docker](https://www.docker.com) container using [Kubernetes](https://kubernetes.io). To [run Docker–based builds](/docs/tutorials/docker-containerized-builds), ensure the container is started with a [privileged security context](https://kubernetes.io/docs/user-guide/pods/#privileged-mode-for-containers) and mount the Docker socket and binary as volumes. For example:
 
-Start a Google Container Engine cluster [through the console](https://console.cloud.google.com/kubernetes/add):
+Start a Google Kubernetes Engine cluster [through the console](https://console.cloud.google.com/kubernetes/add):
 
-<%= image "create-a-cluster.png", size: "2048x1216", alt: "Screenshot of creating a Google Container Engine cluster via the Google Cloud Console" %>
+<%= image "create-a-cluster.png", size: "2048x1216", alt: "Screenshot of creating a Google Kubernetes Engine cluster using the Google Cloud Console" %>
 
 Open [Google Cloud Shell](https://cloud.google.com/shell/), or your own console with [gcloud](https://cloud.google.com/sdk/gcloud/) installed and authenticated. You'll need to configure kubectl to talk to your new cluster. The console includes a "Connect" button which shows the exact command to run:
 
@@ -44,7 +42,7 @@ Fetching cluster endpoint and auth data.
 kubeconfig entry generated for YOUR-CLUSTER-NAME
 ```
 
-Double check it’s running by taking a look at the cluster info:
+Double check it's running by taking a look at the cluster info:
 
 ```shell
 $ kubectl cluster-info
@@ -135,7 +133,7 @@ $ kubectl logs buildkite-agent-3220167863-dtzcf
 2017-02-16 03:34:11 INFO   Waiting for work...
 ```
 
-You’re successfully running a Buildkite Agent!
+You're successfully running a Buildkite Agent!
 
 ### Running more than one agent
 
@@ -159,7 +157,7 @@ buildkite-agent-3220167863-m3nm2   1/1       Running   0          24s
 To run builds from private repositories you can store [an SSH key for the agent](/docs/agent/v2/ssh-keys) in a secret and map it into the containers:
 
 ```shell
-# Use an existing keypair, or generate a new one with something like:
+# Use an existing key pair, or generate a new one with something like:
 $ ssh-keygen -t rsa -b 2048 -N "" -C buildkite-agent -f id_rsa
 Generating public/private rsa key pair.
 Your identification has been saved in id_rsa.
@@ -222,14 +220,14 @@ To add [agent hooks](/docs/agent/v2/hooks) add another config map and volume mou
 
 To add container startup scripts, add another config map with files and volume mount them into `/docker-entrypoint.d/`. Note: scripts in this directory must _not_ have any periods (`.`) or any file extensions since they are run by the `run-parts` util.
 
-See [our Docker setup instructions](/docs/agent/v2/docker) for more details on configuring and customising the Buildkite Agent running in Docker.
+See [our Docker setup instructions](/docs/agent/v2/docker) for more details on configuring and customizing the Buildkite Agent running in Docker.
 
 ## Uploading artifacts to Google Cloud Storage
 
-You can upload the [artifacts](/docs/builds/artifacts) created by your builds to your own [Google Cloud Storage](https://cloud.google.com/storage) bucket. Configure the agent to target your bucket by exporting the following environment variables using an [environment agent hook](/docs/agent/v2/hooks) (this can not be set via the Buildkite web interface, API, or during pipeline upload):
+You can upload the [artifacts](/docs/builds/artifacts) created by your builds to your own [Google Cloud Storage](https://cloud.google.com/storage) bucket. Configure the agent to target your bucket by exporting the following environment variables using an [environment agent hook](/docs/agent/v2/hooks) (this can not be set using the Buildkite web interface, API, or during pipeline upload):
 
 ```shell
-export BUILDKITE_ARTIFACT_UPLOAD_DESTINATION="gs://my-bucket/$BUILDKITE_JOB_ID"
+export BUILDKITE_ARTIFACT_UPLOAD_DESTINATION="gs://my-bucket/$BUILDKITE_PIPELINE_ID/$BUILDKITE_BUILD_ID/$BUILDKITE_JOB_ID"
 ```
 
-Make sure the agent has permission to create new objects. If running on Google Compute Engine or Google Container Engine you can grant Storage Write permission to the instance or cluster, or restrict access more specifically using [a service account](https://cloud.google.com/compute/docs/access/service-accounts).
+Make sure the agent has permission to create new objects. If running on Google Compute Engine or Google Kubernetes Engine you can grant Storage Write permission to the instance or cluster, or restrict access more specifically using [a service account](https://cloud.google.com/compute/docs/access/service-accounts).

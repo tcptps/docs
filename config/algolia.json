@@ -8,7 +8,7 @@
   ],
   "selectors": {
     "lvl0": {
-      "selector": ".Docs__nav__section-heading:not(.Docs__nav__section-heading--link)",
+      "selector": ".Docs__nav__section-container.current > .Docs__nav__section-heading",
       "global": true,
       "default_value": "Documentation"
     },
@@ -21,7 +21,19 @@
     "text": ".Docs__article p, .Docs__article li, .Docs__article td"
   },
   "selectors_exclude": [
+    "[data-algolia-exclude]",
     ".Docs__toc",
-    ".Docs__note--footer-typo"
-  ]
+    ".HomepageCategory"
+  ],
+  "custom_settings": {
+    "synonyms": [
+      [
+        "Pipeline.yml",
+        "Pipeline.yaml",
+        "config.yml",
+        "config.yaml"
+      ]
+
+    ]
+  }
 }

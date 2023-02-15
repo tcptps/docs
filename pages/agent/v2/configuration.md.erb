@@ -1,24 +1,22 @@
-# Buildkite Agent Configuration
+# Buildkite Agent configuration
 
-<section class="Docs__troubleshooting-note">
-  <p>This page references the out-of-date Buildkite Agent v2.</p>
-  <p>For docs referencing the Buildkite Agent v3, <a href="/docs/agent/v3/configuration">see the latest version of this document</a>.
-</section>
+>🚧 This page references the out-of-date Buildkite Agent v2.
+> For docs referencing the Buildkite Agent v3, <a href="/docs/agent/v3/configuration">see the latest version of this document</a>.
 
 Every agent installer comes with a configuration file. You can also customize many of the configuration values using environment variables.
 
-You can find the location of your configuration file in your platform’s installation documentation, or you can set it using the `BUILDKITE_AGENT_CONFIG` environment variable or the `--config` command line argument.
+You can find the location of your configuration file in your platform's installation documentation, or you can set it using the `BUILDKITE_AGENT_CONFIG` environment variable or the `--config` command line argument.
 
 {:toc}
 
-## Configuration Settings
+## Configuration settings
 
 `token`<br>
-The agent token from your organization’s Agents page<br>
+The agent token from your organization's Agents page<br>
 _Environment variable:_ `BUILDKITE_AGENT_TOKEN`
 
 `name`<br>The name of the agent<br>
-_Default:_ `"%hostname-%n"`<br>
+_Default:_ `"%hostname-%spawn"`<br>
 _Environment variable:_ `BUILDKITE_AGENT_NAME`
 
 `priority`<br>
@@ -101,17 +99,17 @@ Prepend timestamps on each line of output<br>
 _Default:_ `false`<br>
 _Environment variable:_ `BUILDKITE_TIMESTAMP_LINES`
 
-## Example Configuration File
+## Example configuration file
 
 ```sh
 token="24db61df8338027652b24aadf82dd483b016eef98fcd332815"
-name="my-app-%n"
+name="my-app-%random"
 meta-data="ci=true,docker=true"
 git-clean-flags="-fdqx"
 debug=true
 ```
 
-## Environment Variables
+## Environment variables
 
 Most configuration options can be specified as environment variables when starting the agent, for example:
 
@@ -119,4 +117,4 @@ Most configuration options can be specified as environment variables when starti
 BUILDKITE_AGENT_META_DATA="queue=deploy,host=$(hostname)" buildkite-agent start
 ```
 
-These variables cannot be modified through the Buildkite web interface, API or via pipeline upload for security reasons. You may be able to modify some of the options, such as `BUILDKITE_GIT_CLONE_FLAGS`, from within [hook scripts](/docs/agent/v2/hooks).
+These variables cannot be modified through the Buildkite web interface, API or using pipeline upload for security reasons. You may be able to modify some of the options, such as `BUILDKITE_GIT_CLONE_FLAGS`, from within [hook scripts](/docs/agent/v2/hooks).

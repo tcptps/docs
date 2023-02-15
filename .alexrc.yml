@@ -1,4 +1,6 @@
 allow:
+  - actor-actress
+  - actors-actresses
   - hooks
   - hook
   - execute
@@ -19,4 +21,4 @@ allow:
   - executes
   - executed
   - invalid
-pronfanitySureness: 2
+profanitySureness: 2

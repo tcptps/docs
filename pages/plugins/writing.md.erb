@@ -1,10 +1,12 @@
-# Writing Plugins
+# Writing plugins
 
 This page shows you how to write your own Buildkite plugin, and how to validate the `plugin.yml` file which describes it against the plugin schema.
 
 {:toc}
 
-In this tutorial we'll create a Buildkite plugin called "File Counter", which counts the number of files in the build directory once the command has finished, and creates a build annotation with the count.
+## Tutorial: write a plugin
+
+In this tutorial, we'll create a Buildkite plugin called "File Counter", which counts the number of files in the build directory once the command has finished, and creates a build annotation with the count.
 
 ```yml
 steps:
@@ -15,9 +17,9 @@ steps:
 ```
 {: codeblock-file="pipeline.yml"}
 
-## Create a new git repository
+## Step 1: Create a new git repository
 
-Every Buildkite plugin is a Git repository, ending in `-buildkite-plugin`. Let's create a new Git repository following these naming conventions:
+Every Buildkite plugin is a Git repository, ending in `-buildkite-plugin`. This suffix is required: Buildkite automatically adds `-buildkite-plugin` to the plugin name specified in the `pipeline.yml`. Let's create a new Git repository following these naming conventions:
 
 ```shell
 mkdir file-counter-buildkite-plugin
@@ -25,9 +27,9 @@ cd file-counter-buildkite-plugin
 git init
 ```
 
-## Add a plugin.yml
+## Step 2: Add a plugin.yml
 
-Next we'll create `plugin.yml` to describes how the plugin appears in the [Buildkite Plugin Directory](/docs/plugins/directory), what it requires, and what configuration options it accepts.
+Next, create `plugin.yml` to describe how the plugin appears in the [Buildkite plugins directory](/docs/plugins/directory), what it requires, and what configuration options it accepts.
 
 ```yaml
 name: File Counter
@@ -42,16 +44,12 @@ configuration:
 ```
 {: codeblock-file="plugin.yml"}
 
-The `configuration` property defines the validation rules for the plugin configuration using the [JSON Schema](https://json-schema.org) format. We’ve specified that the plugin has a single `pattern` property, of type `string`.
+The `configuration` property defines the validation rules for the plugin configuration using the [JSON Schema](https://json-schema.org) format. The plugin in this tutorial has a single `pattern` property, of type `string`.
 
 Configuration properties are available to the hook script as environment variables with the naming pattern `BUILDKITE_PLUGIN_<PLUGIN_NAME>_<CONFIGURATION_PROPERTY>` where `<PLUGIN_NAME>` is the GitHub repository slug, not the name defined in `plugin.yml`. In this case, the configured value of `pattern` will be available as `BUILDKITE_PLUGIN_FILE_COUNTER_PATTERN`.
 
-<div class="Docs__troubleshooting-note">
-  <h3>Plugin properties and git</h3>
-  <p>
-    Note that if you <a href="/docs/plugins/using#plugin-sources">reference a plugin</a> using a full URL and <code>.git</code> extension, you need to use a slightly different syntax to get access to the configuration properties. For example, to get the value of <code>pattern</code> in <code>https://github.com/my-org/my-plugin.git#v1.0.0</code> use  <code>BUILDKITE_PLUGIN_MY_PLUGIN_GIT_PATTERN</code>.
-  </p>
-</div>
+>🚧 Plugin properties and git
+> Note that if you <a href="/docs/plugins/using#plugin-sources">reference a plugin</a> using a full URL and <code>.git</code> extension, you need to use a slightly different syntax to get access to the configuration properties. For example, to get the value of <code>pattern</code> in <code>https://github.com/my-org/my-plugin.git#v1.0.0</code> use  <code>BUILDKITE_PLUGIN_MY_PLUGIN_GIT_PATTERN</code>.
 
 ### Valid plugin.yml properties
 
@@ -73,11 +71,11 @@ Configuration properties are available to the hook script as environment variabl
     </tr>
     <tr>
       <td>author</th>
-      <td>A URL to the plugin author (e.g. website or GitHub profile).</th>
+      <td>A URL to the plugin author (for example, website or GitHub profile).</th>
     </tr>
     <tr>
       <td>requirements</th>
-      <td>An array of commands that are expected to exist in the agent’s <code>$PATH</code>.</th>
+      <td>An array of commands that are expected to exist in the agent's <code>$PATH</code>.</th>
     </tr>
     <tr>
       <td>configuration</th>
@@ -86,9 +84,9 @@ Configuration properties are available to the hook script as environment variabl
   </tbody>
 </table>
 
-## Validate the plugin.yml
+## Step 3: Validate the plugin.yml
 
-The [Buildkite Plugin Linter](https://github.com/buildkite-plugins/buildkite-plugin-linter) helps ensure your plugin is up-to-date, and has all the required files to be listed in the plugin directory.
+The [Buildkite Plugin Linter](https://github.com/buildkite-plugins/buildkite-plugin-linter) helps ensure your plugin is up-to-date, and has all the required files to be listed in the plugins directory.
 
 You can run the plugin linter with the following Docker command:
 
@@ -100,7 +98,6 @@ To make it easier to run this command, add it to the `docker-compose.yml` file:
 
 ```yml
 services:
-  tests: ...
   lint:
     image: buildkite/plugin-linter
     command: ['--id', 'a-github-user/file-counter']
@@ -115,9 +112,9 @@ You can now run the tests using the following command:
 docker-compose run --rm lint
 ```
 
-## Add a hook
+## Step 4: Add a hook
 
-Plugins can implement a number of [plugin hooks](/docs/agent/v3/hooks). For this plugin, we’ll create a `post-command` hook in a `hooks` directory:
+Plugins can implement a number of [plugin hooks](/docs/agent/v3/hooks). For this plugin, create a `post-command` hook in a `hooks` directory:
 
 ```shell
 mkdir hooks
@@ -141,9 +138,9 @@ buildkite-agent annotate "Found ${COUNT} files matching ${PATTERN}"
 ```
   {: codeblock-file="hooks/post-command"}
 
-## Add a test
+## Step 5: Add a test
 
-Next step is to test the `post-command` hook using BATS, and the `buildkite/plugin-tester` Docker image.
+The next step is to test the `post-command` hook using BATS, and the `buildkite/plugin-tester` Docker image.
 
 ```shell
 mkdir tests
@@ -208,12 +205,36 @@ You can now run the tests using the following command:
 docker-compose run --rm tests
 ```
 
-## Add a readme
+## Step 6: Add a readme
 
-Next we'll add a `README.md` file to introduce the plugin to the world:
+Next, add a `README.md` file to introduce the plugin to the world:
 
 <%= render 'plugins/tutorial_readme' %>
 
-## Publish to the directory
+## Developing a plugin with a feature branch
 
-To add your plugin to the [Buildkite Plugin Directory](https://buildkite.com/plugins), publish your repository to a public GitHub repository and add the `buildkite-plugin` repository topic tag. For full instructions, see the [Plugin Directory documentation](/docs/plugins/directory).
+When developing plugins, it is useful to have a quick feedback loop between making a change in your plugin code, and seeing the effects in a Buildkite pipeline. Let's say you're developing your feature on `my-org/plugin#dev-branch`. *By default*, if a Buildkite agent sees that it needs the plugin `my-org/plugin#dev-branch`, and it already has a checkout matching that, it will *not* pull any changes from the Git repository. But if you *do* want to see changes reflected immediately, set [`plugins-always-clone-fresh`](/docs/agent/v3/configuration#plugins-always-clone-fresh) to `true`.
+
+One way to try this is to add the following step to the Buildkite pipeline where you're testing your plugin.  Configuring `BUILDKITE_PLUGINS_ALWAYS_CLONE_FRESH` on only one step means that other plugins, which are unlikely to be changing in the meantime, won't get unnecessarily cloned on every step invocation.
+
+```yml
+steps:
+  - command: ls
+    env:
+      BUILDKITE_PLUGINS_ALWAYS_CLONE_FRESH: "true"
+    plugins:
+      - a-github-user/file-counter#dev-branch:
+          pattern: '*.md'
+```
+{: codeblock-file="pipeline.yml"}
+
+## Publish to the Buildkite plugins directory
+
+To add your plugin to the [Buildkite plugins directory](https://buildkite.com/plugins), publish your repository to a public GitHub repository and add the `buildkite-plugin` [repository topic tag](https://github.com/topics/buildkite-plugin). For full instructions, see the [plugins directory documentation](/docs/plugins/directory).
+
+## Designing plugins: single-command plugins versus library plugins
+
+When writing plugins, there are two patterns you can choose from:
+
+* A single-command plugin: a small, declarative plugin, which exposes a single command for use in your pipeline steps. Most plugins follow this pattern.
+* A library plugin, or super-plugin: this plugin type assembles multiple commands into one plugin. Refer to the [library example Buildkite plugin](https://github.com/buildkite-plugins/library-example-buildkite-plugin) for an example of how to set up this type of plugin.

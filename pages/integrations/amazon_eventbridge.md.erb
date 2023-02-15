@@ -6,7 +6,7 @@ The [Amazon EventBridge](https://aws.amazon.com/eventbridge/) notification servi
 
 ## Events
 
-Once you’ve configured an Amazon EventBridge notification service in Buildkite, the following events are published to the partner event bus:
+Once you've configured an Amazon EventBridge notification service in Buildkite, the following events are published to the partner event bus:
 
 <table>
 <thead>
@@ -19,22 +19,24 @@ Once you’ve configured an Amazon EventBridge notification service in Buildkite
   <tr><th><a href="#events-job-scheduled">Job Scheduled</a></th><td>A job has been scheduled</td></tr>
   <tr><th><a href="#events-job-started">Job Started</a></th><td>A command step job has started running on an agent</td></tr>
   <tr><th><a href="#events-job-finished">Job Finished</a></th><td>A job has finished</td></tr>
-  <tr><th><a href="#events-job-activated">Job Activated</a></th><td>A block step job has been unblocked via the web or API</td></tr>
-  <tr><th><a href="#events-agent-connected">Agent Connected</a></th><td>An agent has connected</td></tr>
-  <tr><th><a href="#events-agent-lost">Agent Lost</a></th><td>An agent has been marked as lost</td></tr>
-  <tr><th><a href="#events-agent-disconnected">Agent Disconnected</a></th><td>An agent has disconnected</td></tr>
-  <tr><th><a href="#events-agent-stopping">Agent Stopping</a></th><td>An agent is stopping</td></tr>
-  <tr><th><a href="#events-agent-stopped">Agent Stopped</a></th><td>An agent has stopped</td></tr>
+  <tr><th><a href="#events-job-activated">Job Activated</a></th><td>A block step job has been unblocked using the web or API</td></tr>
+  <tr><th><a href="#events-agent-connected">Agent Connected</a></th><td>An agent has connected to the API</td></tr>
+  <tr><th><a href="#events-agent-lost">Agent Lost</a></th><td>An agent has been marked as lost. This happens when Buildkite stops receiving pings from the agent</td></tr>
+  <tr><th><a href="#events-agent-disconnected">Agent Disconnected</a></th><td>An agent has disconnected. This happens when the agent shuts down and disconnects from the API</td></tr>
+  <tr><th><a href="#events-agent-stopping">Agent Stopping</a></th><td>An agent is stopping. This happens when an agent is instructed to stop from the API. It first transitions to stopping and finishes any current jobs</td></tr>
+  <tr><th><a href="#events-agent-stopped">Agent Stopped</a></th><td>An agent has stopped. This happens when an agent is instructed to stop from the API. It can be graceful or forceful</td></tr>
 </tbody>
 </table>
 
+See [build states](/docs/pipelines/defining-steps#build-states) and [job states](/docs/pipelines/defining-steps#job-states) to learn more about the sequence of these events.
+
 ## Configuring
 
-In your Buildkite [Organization’s Notification Settings](https://buildkite.com/organizations/-/services), add an Amazon EventBridge notification service:
+In your Buildkite [Organization's Notification Settings](https://buildkite.com/organizations/-/services), add an Amazon EventBridge notification service:
 
 <%= image "buildkite-add-eventbridge.png", width: 1458/2, height: 208/2, alt: "Screenshot of Add Buildkite Amazon EventBridge Button" %>
 
-Once you’ve entered your AWS region and AWS Account ID, a Partner Event Source will be created in your AWS account matching the "Partner Event Source Name" shown on the settings page:
+Once you've entered your AWS region and AWS Account ID, a Partner Event Source will be created in your AWS account matching the "Partner Event Source Name" shown on the settings page:
 
 <%= image "buildkite-amazon-eventbridge-settings.png", width: 1458/2, height: 1254/2, alt: "Screenshot of Buildkite Amazon EventBridge Notification Settings" %>
 
@@ -44,7 +46,7 @@ You can then start consuming the events in your AWS account. The links to "Partn
 
 When creating your EventBridge rule you can specify an "Event Pattern" filter to limit which events will be processed. You can use this to respond only to certain events based on the type, or any attribute from within the event payload.
 
-For example, to only process [Build Finished](#events-build-finished) events you’d configure your rule with the following event pattern:
+For example, to only process [Build Finished](#events-build-finished) events you'd configure your rule with the following event pattern:
 
 <%= image "cloudwatch-event-pattern.png", width: 1636/2, height: 786/2, alt: "Screenshot of configuring an EventBridge Event Pattern filter" %>
 
@@ -73,7 +75,7 @@ You can then use [CloudWatch Logs Insights](https://docs.aws.amazon.com/AmazonCl
 
 <%= image "cloudwatch-insights.png", width: 2280/2, height: 998/2, alt: "Screenshot of CloudWatch Logs Insights" %>
 
-## Lambda Example: Track agent wait times via CloudWatch Metrics
+## Lambda example: Track agent wait times using CloudWatch metrics
 
 You can use the following [AWS Lambda](https://docs.aws.amazon.com/lambda/latest/dg/welcome.html) and <a href="#events-job-started">Job Started</a> event to publish a [CloudWatch metric](https://docs.aws.amazon.com/AmazonCloudWatch/latest/monitoring/working_with_metrics.html) which tracks how long jobs are waiting for agents to become available:
 
@@ -115,7 +117,7 @@ exports.handler = (event, context, callback) => {
 };
 ```
 
-## Official AWS Quick Start Examples
+## Official AWS quick start examples
 
 AWS have published three example implementations of using Buildkite with Amazon Eventbridge:
 
@@ -148,7 +150,9 @@ AWS have published three example implementations of using Buildkite with Amazon 
 
 Each AWS Quick Start example has a corresponding GitHub repository with full example code.
 
-## Example Event Payloads
+## Example event payloads
+
+AWS EventBridge has strict limits on the size of the payload as documented in [Amazon EventBridge quotas](https://docs.aws.amazon.com/eventbridge/latest/userguide/eb-quota.html). As such, the information included in payloads is restricted to basic information about the event. If you need more information, you can query from the Buildkite [APIs](/docs/apis) using the data in the event.
 
 <h3 id="events-build-created">Build Created</h3>
 
@@ -249,6 +253,48 @@ Each AWS Quick Start example has a corresponding GitHub repository with full exa
       "slug": "my-org"
     }
   }
+}
+```
+
+<h3 id="events-build-blocked">Build Blocked</h3>
+
+```json
+{
+    "version": "0",
+    "id": "...",
+    "detail-type": "Build Finished",
+    "source": "...",
+    "account": "...",
+    "time": "2022-01-30T04:32:06Z",
+    "region": "us-east-1",
+    "resources": [],
+    "detail": {
+        "version": 1,
+        "build": {
+            "uuid": "...",
+            "graphql_id": "...",
+            "number": 23,
+            "commit": "...",
+            "message": "Update index.html",
+            "branch": "master",
+            "state": "blocked",
+            "blocked_state": null,
+            "source": "ui",
+            "started_at": "2022-01-30 04:31:59 UTC",
+            "finished_at": "2022-01-30 04:32:06 UTC"
+        },
+        "pipeline": {
+            "uuid": "...",
+            "graphql_id": "...",
+            "slug": "webhook-test",
+            "repo": "git@github.com:nithyaasworld/add-contact-chip.git"
+        },
+        "organization": {
+            "uuid": "...",
+            "graphql_id": "...",
+            "slug": "nithya-bk"
+        }
+    }
 }
 ```
 

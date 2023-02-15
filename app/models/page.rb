@@ -54,18 +54,26 @@ class Page
     end
 
     def render(partial)
-      PagesController.render(partial: partial)
+      PagesController.render(partial: partial, formats: [:md])
     end
 
-    def render_markdown(markdown_path, *args)
-      Page::Renderer.render(render(markdown_path + '.md', *args)).html_safe
+    def render_markdown(partial: nil, text: nil)
+      if partial.blank? && text.blank?
+        raise ArgumentError, "partial or nil not specified"
+      end
+
+      text = if partial
+                 render(partial)
+               else
+                text
+               end
+
+      Page::Renderer.render(text).html_safe
     end
 
     def responsive_image_tag(image, width, height, image_tag_options={}, &block)
-      styles = [ "padding-bottom: #{height.to_f / width.to_f * 100}%" ]
-
       max_width = image_tag_options.delete(:max_width)
-      container = content_tag :div, image_tag(image, image_tag_options), class: ["responsive-image-container", image_tag_options[:class]], style: styles.join("; ")
+      container = content_tag :div, image_tag(image, image_tag_options), class: ["responsive-image-container", image_tag_options[:class]]
 
       if max_width
         content_tag :div, container, style: "max-width: #{max_width}px", class: image_tag_options[:class]
@@ -78,6 +86,14 @@ class Page
   def initialize(view, name)
     @view = view
     @name = name
+  end
+
+  def landing_page?
+    LandingPages.all.include? @name
+  end
+
+  def beta?
+    BetaPages.all.include? @name
   end
 
   def exists?
@@ -93,7 +109,7 @@ class Page
   end
 
   def markdown_body
-    erb_renderer = ERB.new(contents)
+    erb_renderer = ERB.new(contents, nil, '-')
     template_binding = TemplateBinding.new(view_helpers: @view,
                                            image_path: File.join("docs", basename))
 
@@ -108,16 +124,16 @@ class Page
     Page::DataExtractor.extract(markdown_body)
   end
 
-  def open_source_url
-    "https://github.com/buildkite/docs/tree/master/pages/#{basename}.md.erb"
-  end
-
   def canonical_url
     basename.tr('_', '-')
   end
 
   def is_canonical?
     @name == canonical_url
+  end
+
+  def basename
+    @name.to_s.gsub(/[^0-9a-zA-Z\-\_\/]/, '').underscore
   end
 
   private
@@ -130,10 +146,6 @@ class Page
                   end
   end
 
-  def basename
-    @name.to_s.gsub(/[^0-9a-zA-Z\-\_\/]/, '').underscore
-  end
-
   def filename
     @filename ||= begin
                     directory = Rails.root.join("pages")
@@ -144,7 +156,7 @@ class Page
   end
 
   def agentize_title(title)
-    if basename =~ /^agent\/v(.+?)\/?/
+    if basename =~ /^agent\/v(.+?)\/?/ and basename.exclude?('elastic_ci')
       "#{title} v#{$1}"
     else
       title

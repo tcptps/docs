@@ -1,23 +1,23 @@
 # The Buildkite Agent
 
-<section class="Docs__troubleshooting-note">
-  <p>This page references the out-of-date Buildkite Agent v2.</p>
-  <p>For docs referencing the Buildkite Agent v3, <a href="/docs/agent/v3">see the latest version of this document</a>.
-</section>
+>🚧 This page references the out-of-date Buildkite Agent v2.
+> For docs referencing the Buildkite Agent v3, <a href="/docs/agent/v3">see the latest version of this document</a>.
 
 <!--alex ignore easy-->
 
-The buildkite agent is a small, reliable and cross-platform build runner that makes it easy to run automated builds on your own infrastructure. Its main responsibilities are polling buildkite.com for work, running build jobs, reporting back the status code and output log of the job, and uploading the job's artifacts.
+The Buildkite agent is a small, reliable and cross-platform build runner that makes it easy to run automated builds on your own infrastructure. Its main responsibilities are polling buildkite.com for work, running build jobs, reporting back the status code and output log of the job, and uploading the job's artifacts.
 
-## How it Works
+{:toc}
 
-The agent works by polling Buildkite’s agent API over HTTPS. There is no need to forward ports or provide incoming firewall access, and the agents can be run across any number of machines and networks.
+## How it works
+
+The agent works by polling Buildkite's agent API over HTTPS. There is no need to forward ports or provide incoming firewall access, and the agents can be run across any number of machines and networks.
 
 <%= image "how-it-works.svg", alt: "Diagram showing agent to agent API communication" %>
 
-The agent starts by registering itself with Buildkite, and once registered it’s placed into your organization’s agents pool. The agent periodically polls Buildkite looking for new work, waiting to accept an available job.
+The agent starts by registering itself with Buildkite, and once registered it's placed into your organization's agents pool. The agent periodically polls Buildkite looking for new work, waiting to accept an available job.
 
-After accepting a build job the agent will execute the command, streaming back the build script’s output and then posting the final exit status.
+After accepting a build job the agent will execute the command, streaming back the build script's output and then posting the final exit status.
 
 Whilst the job is running you can use the `buildkite-agent meta-data` command to set and get build-wide meta-data, and `buildkite-agent artifact` for fetching and retrieving binary build-wide artifacts. These two commands allow you to have completely isolated build jobs (similar to a 12 factor web application) but have access to shared state and data storage across any number of machines and networks.
 
@@ -44,16 +44,16 @@ Available commands are:
 Use "buildkite-agent <command> --help" for more information about a command.
 </code></pre></div>
 
-To start an agent you’ll need your organization’s agent token from the Agents page of your Buildkite dashboard. You pass the token to the agent via an environment variable or command line flag, and it will register itself with Buildkite and wait to accept jobs.
+To start an agent you'll need your organization's agent token from the Agents page of your Buildkite dashboard. You pass the token to the agent using an environment variable or command line flag, and it will register itself with Buildkite and wait to accept jobs.
 
 ## Configuration
 
 The agent has a standard configuration file format on all systems to set meta-data, priority, etc. See the [configuration documentation](/docs/agent/v2/configuration) for more details.
 
-## Customising with Hooks
+## Customizing with hooks
 
-The agent’s behavior can be customized using hooks, which are shell scripts that exist on your build machines or in each pipeline’s code repository. Hooks can be used to set up [secrets](/docs/pipelines/secrets) as well as overriding default behavior. See the [hooks](/docs/agent/v2/hooks) documentation for full details.
+The agent's behavior can be customized using hooks, which are shell scripts that exist on your build machines or in each pipeline's code repository. Hooks can be used to set up [secrets](/docs/pipelines/secrets) as well as overriding default behavior. See the [hooks](/docs/agent/v2/hooks) documentation for full details.
 
-## Signal Handling
+## Signal handling
 
 When a build job is canceled the agent will send the build job process a `SIGTERM` signal to allow it to gracefully exit. If the process does not exit within 10 seconds it will be forcefully terminated with a `SIGKILL` signal.

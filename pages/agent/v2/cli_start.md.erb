@@ -1,15 +1,13 @@
-# buildkite-agent start
+# `buildkite-agent start`
 
-<section class="Docs__troubleshooting-note">
-  <p>This page references the out-of-date Buildkite Agent v2.</p>
-  <p>For docs referencing the Buildkite Agent v3, <a href="/docs/agent/v3/cli_start">see the latest version of this document</a>.
-</section>
+>🚧 This page references the out-of-date Buildkite Agent v2.
+> For docs referencing the Buildkite Agent v3, <a href="/docs/agent/v3/cli_start">see the latest version of this document</a>.
 
-The Buildkite Agent’s `start` command is used to manually start an agent and register it with Buildkite.
+The Buildkite Agent's `start` command is used to manually start an agent and register it with Buildkite.
 
 {:toc}
 
-## Starting an Agent
+## Starting an agent
 
 ```
 Usage:
@@ -52,11 +50,11 @@ Options:
    --debug-http                     Enable HTTP debug mode, which dumps all request and response bodies to the log [$BUILDKITE_AGENT_DEBUG_HTTP]
 ```
 
-## Setting Metadata
+## Setting metadata
 
 Each agent has meta-data tags which can be used to group and target the agents in your build pipelines. This way you're free to dynamically scale your agents and target them based on their capabilities rather than maintaining a static list.
 
-To set an agent’s meta-data you can set it in the configuration file:
+To set an agent's meta-data you can set it in the configuration file:
 
 ```
 meta-data="docker=true,ruby2=true"
@@ -104,8 +102,8 @@ steps:
       postgres: '*'
 ```
 
-Partial wildcard matching (e.g. `postgres=1.9*` or `postgres=*1.9`) is not yet supported.
+Partial wildcard matching (for example, `postgres=1.9*` or `postgres=*1.9`) is not yet supported.
 
-## The Queue Tag
+## The queue tag
 
 The `queue` meta-data tag works differently from other tags, and can be used for isolating jobs and agents. See the [agent queues documentation](queues) for more information about using queues.

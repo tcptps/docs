@@ -1,6 +1,6 @@
 # Installing Buildkite Agent on Debian
 
-The Buildkite Agent can be installed on Debian versions 7.x and above using our signed apt repository.
+The Buildkite Agent is supported on Debian versions 8 and above using our signed apt repository.
 
 {:toc}
 
@@ -12,9 +12,8 @@ Firstly, ensure your list of packages is up to date:
 sudo apt-get update
 ```
 
-<div class="Docs__note">
-<p>Debian doesn't always have <code>sudo</code> available, so you can run these commands as root and omit the <code>sudo</code>, or install the sudo package as root first.</p>
-</div>
+>📘
+> Debian doesn't always have <code>sudo</code> available, so you can run these commands as root and omit the <code>sudo</code>, or install the sudo package as root first.
 
 Next, ensure you have the `apt-transport-https` package installed for the HTTPS package repository, and the `dirmngr` package installed for adding the signing key:
 
@@ -24,12 +23,19 @@ sudo apt-get install -y apt-transport-https dirmngr
 
 Now you can add our signed apt repository. The default version of the agent is `stable`, but you can get the beta version by using `unstable` instead of `stable` in the following command, or the agent built from the `main` branch of the repository by using `experimental` instead of `stable`.
 
+Download the Buildkite PGP key to a directory that is only writable by `root` (create the directory before running the following command if it doesn't already exist):
+
 ```shell
-sudo apt-key adv --keyserver ipv4.pool.sks-keyservers.net --recv-keys 32A37959C2FA5C3C99EFBC32A79206696452D198
-echo "deb https://apt.buildkite.com/buildkite-agent stable main" | sudo tee /etc/apt/sources.list.d/buildkite-agent.list
+curl -fsSL https://keys.openpgp.org/vks/v1/by-fingerprint/32A37959C2FA5C3C99EFBC32A79206696452D198 | sudo gpg --dearmor -o /usr/share/keyrings/buildkite-agent-archive-keyring.gpg
 ```
 
-Then install the agent:
+Then add the signed source to your apt sources list:
+
+```shell
+echo "deb [signed-by=/usr/share/keyrings/buildkite-agent-archive-keyring.gpg] https://apt.buildkite.com/buildkite-agent stable main" | sudo tee /etc/apt/sources.list.d/buildkite-agent.list
+```
+
+And install the Buildkite agent:
 
 ```shell
 sudo apt-get update && sudo apt-get install -y buildkite-agent
@@ -44,48 +50,46 @@ sudo sed -i "s/xxx/INSERT-YOUR-AGENT-TOKEN-HERE/g" /etc/buildkite-agent/buildkit
 And then start the agent:
 
 ```shell
-# For Debian 8.x and above (systemd)
 sudo systemctl enable buildkite-agent && sudo systemctl start buildkite-agent
-
-# For Debian 7.x (using upstart)
-sudo service buildkite-agent start
-
-# For Debian 7.x (using sysvinit)
-sudo /etc/init.d/buildkite-agent start
 ```
 
 You can view the logs at:
 
 ```shell
-# For Debian 8.x and above (systemd)
 sudo journalctl -f -u buildkite-agent
-
-# For Debian 7.x (using upstart)
-sudo tail -f /var/log/upstart/buildkite-agent.log
-
-# For Debian 7.x (using sysvinit)
-sudo tail -f /var/log/buildkite-agent.log
 ```
 
-## SSH Key Configuration
+## Updating keys installed using apt-key
 
-<%= render_markdown 'agent/v3/ssh_key_with_buildkite_agent_user' %>
+If you've previously installed keys using `apt-key`, move the Buildkite agent key from `/etc/apt/trusted.gpg` or `/etc/apt/trusted.gpg.d/` to `/usr/share/keyrings/buildkite-agent-archive-keyring.gpg`, making sure that both that file and directory are only writable by `root`.
 
-See the [Agent SSH Keys](/docs/agent/v3/ssh-keys) documentation for more details.
+Update your Buildkite agent entries in `/etc/apt/sources.list.d/buildkite-agent.list` to:
 
-## File Locations
+```shell
+deb [signed-by=/usr/share/keyrings/buildkite-agent-archive-keyring.gpg] https://apt.buildkite.com/buildkite-agent stable main
+```
 
-<%= render_markdown 'agent/v3/apt_locations' %>
+## SSH key configuration
+
+<%= render_markdown partial: 'agent/v3/ssh_key_with_buildkite_agent_user' %>
+
+See the [Agent SSH keys](/docs/agent/v3/ssh-keys) documentation for more details.
+
+## File locations
+
+<%= render_markdown partial: 'agent/v3/apt_locations' %>
 
 ## Configuration
 
-<%= render_markdown 'agent/v3/apt_configuration' %>
+<%= render_markdown partial: 'agent/v3/apt_configuration' %>
+
+## Which user the agent runs as
+
+On Debian, the Buildkite agent runs as user `buildkite-agent`.
 
 ## Running multiple agents
 
 You can run as many parallel agents on the one machine as you wish by duplicating the systemd/upstart service configuration file, for example:
-
-### For Debian 8.x and above (systemd)
 
 ```shell
 # Disable the default unit
@@ -105,14 +109,6 @@ sudo journalctl -f -u "buildkite-agent@*"
 sudo journalctl -f -u buildkite-agent@2
 ```
 
-### For Debian 7.x (using upstart)
-
-```shell
-sudo cp /etc/init/buildkite-agent.conf /etc/init/buildkite-agent-2.conf
-sudo service buildkite-agent-2 start
-sudo tail -f /var/log/upstart/buildkite-agent-2.log
-```
-
 ## Upgrading
 
-<%= render_markdown 'agent/v3/apt_upgrading' %>
+<%= render_markdown partial: 'agent/v3/apt_upgrading' %>

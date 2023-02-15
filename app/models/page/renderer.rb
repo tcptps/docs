@@ -20,6 +20,8 @@ class Page::Renderer
     doc = add_table_of_contents(doc)
     doc = fix_curl_highlighting(doc)
     doc = add_code_filenames(doc)
+    doc = add_callout(doc)
+    doc = init_responsive_tables(doc)
     doc.to_html.html_safe
   end
 
@@ -28,7 +30,9 @@ class Page::Renderer
   def markdown(options)
     Redcarpet::Markdown.new(HTMLWithSyntaxHighlighting.new(options), autolink: true,
                                                                      space_after_headers: true,
-                                                                     fenced_code_blocks: true)
+                                                                     fenced_code_blocks: true,
+                                                                     tables: true,
+                                                                     no_intra_emphasis: true)
   end
 
   class HTMLWithSyntaxHighlighting < Redcarpet::Render::HTML
@@ -46,7 +50,7 @@ class Page::Renderer
     end
 
     def codespan(code)
-      %{<code class="dark-gray border border-gray rounded" style="padding: .1em .25em; font-size: 85%">#{EscapeUtils.escape_html(code)}</code>}
+      %{<code>#{EscapeUtils.escape_html(code)}</code>}
     end
   end
 
@@ -81,9 +85,9 @@ class Page::Renderer
     # Second, we make them all linkable and give them the right classes.
     headings.each do |node|
       node['class'] = 'Docs__heading'
-      node.add_child(<<~HTML)
-        <a href="##{node['id']}" aria-hidden="true" class="Docs__heading__anchor"></a>
-      HTML
+      link = "<a class='Docs__heading__anchor' href='##{node['id']}'></a>"
+
+      node.children.wrap(link)
     end
 
     doc
@@ -94,31 +98,38 @@ class Page::Renderer
 
     # Third, we generate and replace the actual toc.
     doc.search('./p').each do |node|
-      next unless node.text == '{:toc}'
+      toc = '{:toc}'
+      notoc = '{:notoc}'
 
-      if headings.empty?
+      next unless [toc, notoc].include? node.text
+
+      if headings.empty? or node.text == notoc
         node.replace('')
       else
+        html_list_items = headings.map {|heading|
+          <<~HTML.strip
+            <li class="Toc__list-item"><a class="Toc__link" href="##{heading['id']}">#{heading.text.strip}</a></li>
+          HTML
+        }.join("").strip
+
         node.replace(<<~HTML.strip)
-          <div class="Docs__toc">
-            <p>On this page:</p>
-            <ul>
-              #{headings.map {|heading|
-                %{<li><a href="##{heading['id']}">#{heading.text.strip}</a></li>}
-              }.join("")}
+          <nav class="Toc">
+            <p class="Toc__title"><strong>On this page:</strong></p>
+            <ul class="Toc__list">
+              #{html_list_items}
             </ul>
-          </div>
+          </nav>
         HTML
       end
     end
-    
+
     doc
   end
 
   def fix_curl_highlighting(doc)
     doc.search('.//code').each do |node|
       next unless node.text.starts_with?('curl ')
-    
+
       node.replace(node.to_html.gsub(/\{.*?\}/mi) {|uri_template|
         %(<span class="o">) + uri_template + %(</span>)
       })
@@ -132,17 +143,24 @@ class Page::Renderer
       next unless node.text.starts_with?('{: codeblock-file=')
 
       filename = node.content[/codeblock-file="(.*)"}/, 1]
+      figure = "<figure class='highlight-figure'><figcaption>#{filename}</figcaption></figure>"
 
-      figure = Nokogiri::XML::Node.new "figure", doc
-      figure["class"] = "highlight-figure"
-      caption = Nokogiri::XML::Node.new "figcaption", doc
-      caption.content = filename
-      figure.add_child(caption)
-      node.previous_element.add_previous_sibling(figure)
-      node.previous_element.parent = figure
+      node.previous_element.wrap(figure)
       node.remove
     end
-    
+
+    doc
+  end
+
+  def add_callout(doc)
+    doc.search('./blockquote').each do |node|
+      callout = node.children.compact_blank.join.chr.to_sym
+
+      next unless Page::Renderers::Callout::CALLOUT_TYPE.key? callout
+
+      Page::Renderers::Callout.new(node, callout).process
+    end
+
     doc
   end
 
@@ -155,10 +173,10 @@ class Page::Renderer
       node.previous_element['id'] = id
       node.remove
     end
-    
+
     doc
   end
-  
+
   def add_custom_classes(doc)
     doc.search('./p').each do |node|
       next unless node.text.starts_with?('{: class=')
@@ -168,7 +186,25 @@ class Page::Renderer
       node.previous_element['class'] = css_class
       node.remove
     end
-    
+
+    doc
+  end
+
+  def init_responsive_tables(doc)
+    doc.css('table.responsive-table:not(.responsive-table--single-column-rows)').each do |table|
+      thead_ths = table.css('thead th')
+
+      unless thead_ths.empty?
+        table.search('./tbody/tr').each do |tr|
+          tr.search('./td').each_with_index do |td, i|
+            faux_th = "<th aria-hidden class=\"responsive-table__faux-th\">#{thead_ths[i].children}</th>"
+
+            td.add_previous_sibling(faux_th)
+          end
+        end
+      end
+    end
+
     doc
   end
 end

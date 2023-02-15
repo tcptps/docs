@@ -23,7 +23,7 @@ require 'capybara/rspec'
 # directory. Alternatively, in the individual `*_spec.rb` files, manually
 # require only the support files necessary.
 #
-# Dir[Rails.root.join('spec', 'support', '**', '*.rb')].each { |f| require f }
+Dir[Rails.root.join('spec', 'support', '**', '*.rb')].each { |f| require f }
 
 RSpec.configure do |config|
   # RSpec Rails can automatically mix in different behaviours to your tests
@@ -31,7 +31,7 @@ RSpec.configure do |config|
   # `post` in specs under `spec/controllers`.
   #
   # You can disable this behaviour by removing the line below, and instead
-  # explicitly tag your specs with their type, e.g.:
+  # explicitly tag your specs with their type, for example:
   #
   #     RSpec.describe UsersController, :type => :controller do
   #       # ...
@@ -43,6 +43,12 @@ RSpec.configure do |config|
 
   # Filter lines from Rails gems in backtraces.
   config.filter_rails_from_backtrace!
-  # arbitrary gems may also be filtered via:
+  # arbitrary gems may also be filtered using:
   # config.filter_gems_from_backtrace("gem name")
+
 end
+
+# Find and fix flaky tests
+
+require "buildkite/test_collector"
+Buildkite::TestCollector.configure(hook: :rspec)

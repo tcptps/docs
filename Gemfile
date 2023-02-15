@@ -1,12 +1,15 @@
 # frozen_string_literal: true
 
+# Heroku likes the version here; we like only updating one place
+ruby File.read(".ruby-version").strip
+
 source "https://rubygems.org"
 
 # Choo choo 🚝 (only include the Rails gems we need)
-gem "actionpack"
-gem "actionview"
-gem "activesupport"
-gem "railties"
+gem "actionpack", "~> 6.0"
+gem "actionview", "~> 6.0"
+gem "activesupport", "~> 6.0"
+gem "railties", "~> 6.0"
 gem "sprockets-rails"
 
 # Use Puma as the app server
@@ -45,6 +48,7 @@ gem "bugsnag"
 group :development, :test do
   # Call "byebug" anywhere in the code to stop execution and get a debugger console
   gem "byebug", platforms: [:mri, :mingw, :x64_mingw]
+  gem "dotenv-rails"
 end
 
 group :development do
@@ -52,6 +56,7 @@ group :development do
   gem "web-console"
   gem "listen"
   gem "pry"
+  gem 'graphql-client'
 end
 
 group :test do
@@ -63,4 +68,8 @@ group :test do
 
   # Browser testing stuff
   gem "capybara"
+end
+
+group :test do
+  gem "buildkite-test_collector"
 end

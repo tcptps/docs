@@ -1,10 +1,10 @@
-# Managing Log Output
+# Managing log output
 
 Buildkite uses our open-source [terminal Golang library](https://github.com/buildkite/terminal) to provide you with the best possible terminal rendering experience for your build logs, including ANSI terminal emulation to ensure spinners, progress bars, colors and emojis are rendered beautifully.
 
 {:toc}
 
-## Collapsing Output
+## Collapsing output
 
 You can group and collapse your build output by echoing `--- [group name]` in your build output.
 
@@ -12,11 +12,19 @@ You can group and collapse your build output by echoing `--- [group name]` in yo
 echo "--- A section of the build"
 ```
 
-If you want to have the group open by default, use `+++` instead of `---`:
+You can group, collapse and de-emphasize your build output by echoing `~~~ [group name]` in your build output.
+
+```bash
+echo "~~~ An unimportant section of the build"
+```
+
+If you want to have the group open by default, use `+++` instead:
 
 ```bash
 echo "+++ A section of the build"
 ```
+
+If no group is explicitly expanded (`+++`), then the last collapsed regular group (`---`) gets expanded instead. If you really want all groups to be collapsed, add an empty expanded group (`+++`).
 
 If you'd like to open the previously defined group, use `^^^ +++`. This is useful if a command within a group fails, and you'd like to have the group already open when you view the log.
 
@@ -97,7 +105,7 @@ your_build_command | tee build.log | tail -c90000000
 
 ## Improving Xcode logs with xcpretty
 
-[xcpretty](https://github.com/supermarin/xcpretty) is an open-source tool that helps to reduce, format and color-code your [Xcode](http://developer.apple.com/xcode) build output. Once you’ve installed xcpretty you can pipe the output of xcodebuild into it:
+[xcpretty](https://github.com/supermarin/xcpretty) is an open-source tool that helps to reduce, format and color-code your [Xcode](http://developer.apple.com/xcode) build output. Once you've installed xcpretty you can pipe the output of xcodebuild into it:
 
 ```bash
 #!/bin/bash
@@ -111,20 +119,95 @@ Make sure to set the `-o pipefail` option in your buildscript as above, otherwis
 
 <%= image("xcpretty.png", alt: "Screenshot of xcpretty output", size: '656x316') %>
 
+## Encryption and security
+
+Buildkite has zero access to your source code in the pipelines and only receives and stores the log output of the builds and build artifacts in encrypted form.
+
+Logs are AES-encrypted, and the build artifacts are encrypted in transit and at rest using AWS encryption (KMS or S3 SSE). As a result, the keys cannot be extracted on the Buildkite's side, and the AWS solutions provide mitigations against zero-day attacks and other security issues. Beyond this, the control over security measures within your infrastructure is up to you.
+
+If you choose to [host your build artifacts](/docs/agent/v3/cli-artifact#using-your-private-aws-s3-bucket) yourself, they end up in your private AWS bucket.
+
+If you are a Buildkite customer on the [Enterprise](https://buildkite.com/pricing) plan, you can also set up a private AWS S3 build log archive location and store the logs in your private bucket.
+
+To further tighten the security in a Buildkite organization, you can use the [API Access Audit](https://buildkite.com/organizations/~/api-access-audit) to track the actions of the users who have API access tokens that can access your organization's data using the REST and GraphQL API.
+
 ## Redacted environment variables
 
-<div class="Docs__experiment">
-<p class="Docs__experiment__heading">Experimental feature</p>
-<p>This is an experimental feature, set <code>experiment="output-redactor"</code> in your <a href="/docs/agent/v3/configuration#experiment"> agent configuration</a> to use it.</p>
-</div>
+The Buildkite agent can redact the values of environment variables whose names match common patterns for passwords, and other secure information, before the build log is uploaded to Buildkite.
 
-The Buildkite agent can redact strings that match the value of environment variables whose names match common patterns for passwords and other secure information before the build log is uploaded to Buildkite.
-
-The default environment variable name patterns are `*_PASSWORD`, `*_SECRET` and `*_TOKEN`. You can replace the default patterns by [setting the environment variable](/docs/agent/v3/configuration#redacted-vars) `BUILDKITE_REDACTED_VARS` **on your agent**.
+The default environment variable name patterns are `*_PASSWORD`, `*_SECRET`, `*_TOKEN`, `*_ACCESS_KEY`, and `*_SECRET_KEY`. You can replace the default patterns by [setting redacted-vars](/docs/agent/v3/configuration#redacted-vars) **on your agent**.
 
 For example, if you have environment variable `MY_SECRET="topsecret"`and you run a command that outputs `This is topsecret info`, the log output will actually be `This is [REDACTED] info`.
 
-<div class="Docs__note">
-<p class="Docs__note__heading">Setting environment variables</p>
-<p>Note that if you <emphasis>set</emphasis> or <emphasis>interpolate</emphasis> a secret environment variable in your <code>pipeline.yml</code> it is not redacted, but doing that is <a href="/docs/pipelines/secrets#anti-pattern-storing-secrets-in-your-pipeline-dot-yml">not recommended</a>.</p>
-</div>
+>📘 Setting environment variables
+> Note that if you <emphasis>set</emphasis> or <emphasis>interpolate</emphasis> a secret environment variable in your <code>pipeline.yml</code> it is not redacted, but doing that is <a href="/docs/pipelines/secrets#anti-pattern-storing-secrets-in-your-pipeline-dot-yml">not recommended</a>.
+
+## Private build log archive storage
+
+By default, build logs are stored in encrypted form in Buildkite's Amazon S3 buckets, but you can also store the archived build logs in your private AWS S3 bucket.
+
+>📘
+> This feature is only available to customers on the Buildkite <a href="https://buildkite.com/pricing">Enterprise</a> plan.
+
+To set up a private build log archive storage:
+
+1. Create an Amazon S3 bucket in *us-east-1* location (the only region that is currently supported).
+2. Provide *read* and *write* access permission policy for the Buildkite's AWS account `032379705303`.
+
+    Here's an example policy that contains an Amazon S3 bucket configuration with Buildkite's account number in it. Replace `my-bucket` and `my-prefix` placeholders with your Amazon S3 bucket information:
+
+    ```json
+    {
+        "Version": "2012-10-17",
+        "Statement": [
+            {
+                "Sid": "AllowBuildkiteToWriteObjectsInLogsPrefix",
+                "Effect": "Allow",
+                "Principal": {
+                    "AWS": "arn\:aws\:iam::032379705303:root"
+                },
+                "Action": "s3:PutObject",
+                "Resource": "arn\:aws\:s3:::my-bucket/my-prefix/*",
+                "Condition": {
+                    "StringEquals": {
+                        "s3:x-amz-acl": "bucket-owner-full-control"
+                    }
+                }
+            },
+            {
+                "Sid": "AllowBuildkiteToReadObjectsInLogsPrefix",
+                "Effect": "Allow",
+                "Principal": {
+                    "AWS": "arn\:aws\:iam::032379705303:root"
+                },
+                "Action": "s3:GetObject",
+                "Resource": "arn\:aws\:s3:::my-bucket/my-prefix/*"
+            },
+            {
+                "Sid": "AllowBuildkiteToDeleteObjectsInLogsPrefix",
+                "Effect": "Allow",
+                "Principal": {
+                    "AWS": "arn\:aws\:iam::032379705303:root"
+                },
+                "Action": "s3:DeleteObject",
+                "Resource": "arn\:aws\:s3:::my-bucket/my-prefix/*"
+            },
+            {
+                "Sid": "AllowBuildkiteToListBucketInLogsPrefix",
+                "Effect": "Allow",
+                "Principal": {
+                    "AWS": "arn\:aws\:iam::032379705303:root"
+                },
+                "Action": "s3:ListBucket",
+                "Resource": "arn\:aws\:s3:::my-bucket",
+                "Condition": {
+                    "StringLike": {
+                        "s3:prefix": "my-prefix/*"
+                    }
+                }
+            }
+        ]
+    }
+    ```
+
+3. Reach out to [support@buildkite.com](mailto:support@buildkite.com) and provide the address of your Amazon S3 bucket. The Buildkite engineering team will continue the configuration to complete the setup.

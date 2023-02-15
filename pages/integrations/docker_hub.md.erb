@@ -37,7 +37,7 @@ DOCKER_LOGIN_PASSWORD="the-password"
 
 All agents check the local filesystem for [hook scripts to execute during a job](/docs/agent/v3/hooks).
 
-A [pre-command hook](https://buildkite.com/docs/agent/v3/hooks#available-hooks) script like this is one option for authenticating with Docker Hub, and can be configured to fetch credentials from the system you use to store them in:
+A [pre-command hook](https://buildkite.com/docs/agent/v3/hooks#job-lifecycle-hooks) script like this is one option for authenticating with Docker Hub, and can be configured to fetch credentials from the system you use to store them in:
 
 ```bash
 #!/bin/bash
@@ -74,8 +74,8 @@ Docker Hub images](https://cloud.google.com/container-registry/docs/migrate-exte
 
 This approach requires:
 
-1. A regular process (e.g. nightly) that mirrors the Docker images you need
-2. Updating all pipelines to use the mirrored GCR image (e.g. from `nginx:1.14.2`
+1. A regular process (for example, nightly) that mirrors the Docker images you need
+2. Updating all pipelines to use the mirrored GCR image (for example, from `nginx:1.14.2`
    to `gcr.io/<GCR_PROJECT>/nginx:1.14.2`)
 
 ## Mirroring Docker images into AWS Elastic Container Registry
@@ -84,7 +84,7 @@ AWS doesn't have specific documentation, however their [advice on dealing with
 Docker Hub rate limits](https://aws.amazon.com/blogs/containers/advice-for-customers-dealing-with-docker-hub-rate-limits-and-a-coming-soon-announcement/) suggests mirroring public images into AWS Elastic
 Container Registry (ECR). A similar solution to the one proposed by Google Cloud Platform (GCP):
 
-1. A regular process (e.g. nightly) that mirrors the Docker images you need
+1. A regular process (for example, nightly) that mirrors the Docker images you need
 2. Updating all pipelines to use the mirrored ECR image instead of the original one
 
 ## Configuring the docker daemon to use the GCR mirror of popular Docker Hub images
@@ -102,7 +102,7 @@ images in use you may continue to hit Docker Hub rate limits.
 
 ## Running a read-through caching registry
 
-There are two popular options for running a private caching docker registry,
+There are two popular options for running a private caching Docker registry,
 where requests for missing images result in the image being fetched from an
 origin registry (like Docker Hub).
 
@@ -110,5 +110,5 @@ origin registry (like Docker Hub).
 * https://github.com/rpardini/docker-registry-proxy
 
 Once the caching registry is operating, pipelines can be updated to use images
-from that registry (e.g. from `nginx:1.14.2` to `example.com/nginx:1.14.2`) and
+from that registry (for example, from `nginx:1.14.2` to `example.com/nginx:1.14.2`) and
 new images will be transparently fetched from Docker Hub.

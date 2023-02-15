@@ -1,16 +1,15 @@
-# Setting up Single Sign-On with GraphQL
+# Setting up single sign-on with GraphQL
 
-Buildkite’s Single Sign-On (SSO) can be set up by emailing support, or you can set it up manually using our [GraphQL APIs](/docs/apis/graphql-api). This tutorial covers how to set up SSO manually using GraphQL.
+Buildkite's single sign-on (SSO) can be set up by emailing support, or you can set it up manually using our [GraphQL APIs](/docs/apis/graphql-api). This tutorial covers how to set up SSO manually using GraphQL.
 
-<section class="Docs__note">
-  <p>For details on every available option available in the GraphQL APIs, please use the documentation sidebar built into the <a href="/docs/graphql-api#getting-started">GraphQL Explorer</a>.</p>
-</section>
+>📘
+> For details on every available option available in the GraphQL APIs, please use the documentation sidebar built into the <a href="/docs/graphql-api#getting-started">GraphQL explorer</a>.
 
 {:toc}
 
-## Finding your organization’s GraphQL ID
+## Finding your organization's GraphQL ID
 
-For every type of SSO provider, you’ll need your Buildkite organization’s [GraphQL ID](/docs/apis/graphql-api#graphql-ids). You can find your organization’s GraphQL ID using the following GraphQL query:
+For every type of SSO provider, you need your Buildkite organization's [GraphQL ID](/docs/apis/graphql-api#graphql-ids). You can find your organization's GraphQL ID using the following GraphQL query:
 
 ```graphql
 query OrganizationId {
@@ -45,15 +44,15 @@ mutation CreateProvider {
 }
 ```
 
-You'll need the provider's `id` from the output of this mutation in step three. 
+You need the provider's `id` from the output of this mutation in step three.
 
 ### Step 2
 
-The second step is to use the `url` that was returned above to perform a test login. Open the `url` in a browser, and perform a test login via G Suite.
+The second step is to use the `url` that was returned above to perform a test login. Open the `url` in a browser, and perform a test login using G Suite.
 
 ### Step 3
 
-Once a test login has been completed, you can do the final step: enabling the provider using the `ssoProviderEnable` mutation. Running this mutation will require all your users to authorize via your G Suite provider before they can access your organization on Buildkite.
+Once you complete the test login, you can do the final step: enabling the provider using the `ssoProviderEnable` mutation. Running this mutation will require all your users to authorize using your G Suite provider before they can access your organization on Buildkite.
 
 ```graphql
 mutation EnableProvider {
@@ -70,17 +69,16 @@ mutation EnableProvider {
 }
 ```
 
-You should now see that the provider’s state is enabled.
+You should now see that the provider's state is enabled.
 
-<section class="Docs__troubleshooting-note">
-  <p>See the <code>SSOProviderUpdatePayload</code> documentation for other properties that can be configured on your SSO provider, such as <code>sessionDurationInHours</code> and <code>note</code>.</p>
-</section>
+>🚧
+> See the <code>SSOProviderUpdatePayload</code> documentation for other properties that can be configured on your SSO provider, such as <code>sessionDurationInHours</code> and <code>note</code>.
 
 ## Setting up SAML (Google Cloud Identity, Okta, OneLogin, ADFS and others)
 
 ### Step 1
 
-The first step in setting up a SAML-based provider is to use the `ssoProviderCreate` mutation to create a new provider in Buildkite. This mutation will return the details you’ll need for your SSO provider’s system.
+The first step in setting up a SAML-based provider is to use the `ssoProviderCreate` mutation to create a new provider in Buildkite. This mutation returns the details you'll need for your SSO provider's system.
 
 The `emailDomainVerificationAddress` requires the same domain as `emailDomain`, and must be one of `admin@`, `administrator@`, `postmaster@`, or `webmaster@`.
 
@@ -109,11 +107,11 @@ mutation CreateProvider {
 }
 ```
 
-You'll need the provider's `id` from the output of this mutation in steps three and four. 
+You need the provider's `id` from the output of this mutation in steps three and four.
 
 ### Step 2
 
-The next step is to log into your SSO provider’s system and setup Buildkite using the details from the GraphQL response above.
+The next step is to log into your SSO provider's system and set up Buildkite using the details from the GraphQL response above.
 
 If the SSO provider supports a metadata URL, you can use the `url` property of the `metadata` object. If your SSO provider does not support metadata URL, use the `ssoURL` property for the ACS URL or SSO URL, and the `issuer` property for the Issuer or Entity ID.
 
@@ -144,9 +142,9 @@ mutation UpdateProviderMetaData {
   }
 }
 ```
-      
+
 If your SSO provider didn't provide a metadata URL, then copy SSO URL, Issuer (also known as Entity ID), and Certificate into the `ssoProviderUpdate` mutation:
-      
+
 ```graphql
 mutation UpdateProviderMetaData {
   ssoProviderUpdate(input: {
@@ -175,9 +173,9 @@ If your SSO provider requests additional info, use the `ssoURL` property for the
 
 ### Step 4
 
-You can now perform a test login from your SSO provider’s web interface, or using the `url` returned from the update mutation.
+You can now perform a test login from your SSO provider's web interface, or using the `url` returned from the update mutation.
 
-Once a test login has been completed, you can do the final step: enabling the provider using the `ssoProviderEnable` mutation. Running this mutation will require all your users to authorize via your SSO provider before they can access your organization on Buildkite.
+Once you complete the test login, you can do the final step: enabling the provider using the `ssoProviderEnable` mutation. Running this mutation will require all your users to authorize using your SSO provider before they can access your organization on Buildkite.
 
 ```graphql
 mutation EnableProvider {
@@ -193,15 +191,14 @@ mutation EnableProvider {
 }
 ```
 
-You should now see that the provider’s state is enabled.
+You should now see that the provider's state is enabled.
 
-<section class="Docs__troubleshooting-note">
-  <p>See the <code>SSOProviderUpdatePayload</code> documentation for other properties that can be configured on your SSO provider, such as <code>sessionDurationInHours</code> and <code>note</code>.</p>
-</section>
+>🚧
+> See the <code>SSOProviderUpdatePayload</code> documentation for other properties that can be configured on your SSO provider, such as <code>sessionDurationInHours</code> and <code>note</code>.
 
-## Finding an SSO provider’s details
+## Finding an SSO provider's details
 
-If you need to find the id of a particular SSO provider, you can query the `ssoProviders` field of your organization:
+If you need to find the ID of a particular SSO provider, you can query the `ssoProviders` field of your organization:
 
 ```graphql
 query FindProviders {
@@ -225,7 +222,7 @@ query FindProviders {
 }
 ```
 
-Some provider types have additional fields which you can query using GraphQL’s [Inline Fragment](https://graphql.org/learn/queries/#inline-fragments) syntax, for example:
+Some provider types have additional fields which you can query using GraphQL's [Inline Fragment](https://graphql.org/learn/queries/#inline-fragments) syntax, for example:
 
 ```graphql
 query FindProviders {
@@ -274,3 +271,5 @@ mutation DisableProvider {
   }
 }
 ```
+
+

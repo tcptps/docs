@@ -1,9 +1,7 @@
 # Securing your Buildkite Agent
 
-<section class="Docs__troubleshooting-note">
-  <p>This page references the out-of-date Buildkite Agent v2.</p>
-  <p>For docs referencing the Buildkite Agent v3, <a href="/docs/agent/v3/securing">see the latest version of this document</a>.
-</section>
+>🚧 This page references the out-of-date Buildkite Agent v2.
+> For docs referencing the Buildkite Agent v3, <a href="/docs/agent/v3/securing">see the latest version of this document</a>.
 
 In cases where a Buildkite Agent is being deployed into a sensitive environment there are a few default settings and techniques which may be adjusted.
 
@@ -11,7 +9,7 @@ In cases where a Buildkite Agent is being deployed into a sensitive environment 
 
 ## Securely storing secrets
 
-For best practices and recommendations about secret storage in the Agent, see the [Managing Secrets](/docs/pipelines/secrets) guide.
+For best practices and recommendations about secret storage in the Agent, see the [Managing secrets](/docs/pipelines/secrets) guide.
 
 ## Disabling automatic SSH fingerprint verification
 
@@ -25,7 +23,7 @@ Automatic SSH fingerprint verification can be disabled by setting `no-automatic-
 
 ## Disabling command eval
 
-By default the agent allows you to run any command on the build server (e.g. `make test`). You can disable command evaluation and allow only the execution of scripts (with no ability to pass command line flags). Once disabled your build steps will need to be checked into your repository as scripts, and the only way to pass arguments is via environment variables.
+By default the agent allows you to run any command on the build server (for example, `make test`). You can disable command evaluation and allow only the execution of scripts (with no ability to pass command line flags). Once disabled your build steps will need to be checked into your repository as scripts, and the only way to pass arguments is using environment variables.
 
 To disable command line evaluation use one of the following settings:
 
@@ -37,7 +35,7 @@ Note: hooks and plugins (Buildkite Agent 3.x) can override this setting. See [Al
 
 ## Allowing
 
-You can use the [agent’s environment hook](hooks) to allow repositories, commands, plugins (for the Buildkite Agent 3.x beta), or any other logic you wish. The environment hook will be run before any source code is checked out onto the machine.
+You can use the [agent's environment hook](hooks) to allow repositories, commands, plugins (for the Buildkite Agent 3.x beta), or any other logic you wish. The environment hook will be run before any source code is checked out onto the machine.
 
 For example, the following environment hook allows only a single file from a single repository to be executed on the agent machine:
 
@@ -82,11 +80,11 @@ exit 1
 
 ## Forcing clean checkouts
 
-By default Buildkite will reuse (after cleaning) a previous checkout. This may not be safe if building commits from untrusted sources (e.g. 3rd party pull requests). To force a clean checkout every time, set `BUILDKITE_CLEAN_CHECKOUT=true` in the environment.
+By default Buildkite will reuse (after cleaning) a previous checkout. This may not be safe if building commits from untrusted sources (for example, 3rd party pull requests). To force a clean checkout every time, set `BUILDKITE_CLEAN_CHECKOUT=true` in the environment.
 
 ## Disallowing hooks in the repository
 
-The default bootstrap script will execute hooks from the agent configuration (global) and the repository (local). Running local hooks may be undesirable if you are building commits from untrusted sources (e.g. 3rd party pull requests).
+The default bootstrap script will execute hooks from the agent configuration (global) and the repository (local). Running local hooks may be undesirable if you are building commits from untrusted sources (for example, 3rd party pull requests).
 
 Local hooks can be disabled by setting `BUILDKITE_NO_LOCAL_HOOKS=true` in the environment.
 
