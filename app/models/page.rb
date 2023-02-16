@@ -68,7 +68,7 @@ class Page
                 text
                end
 
-      Page::Renderer.render(text).html_safe
+      Page::Renderer.new(@view_helpers).render(text).html_safe
     end
 
     def responsive_image_tag(image, width, height, image_tag_options={}, &block)
@@ -117,7 +117,7 @@ class Page
   end
 
   def body
-    Page::Renderer.render(markdown_body)
+    Page::Renderer.new(@view).render(markdown_body)
   end
 
   def extracted_data

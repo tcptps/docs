@@ -3,8 +3,8 @@
 class Page::Renderer
   require "rouge/plugins/redcarpet"
 
-  def self.render(text, options = {})
-    new.render(text, options)
+  def initialize(view_helpers)
+    @view_helpers = view_helpers
   end
 
   def render(text, options = {})
@@ -28,7 +28,7 @@ class Page::Renderer
   private
 
   def markdown(options)
-    Redcarpet::Markdown.new(HTMLWithSyntaxHighlighting.new(options), autolink: true,
+    Redcarpet::Markdown.new(HTMLWithSyntaxHighlighting.new(@view_helpers, options), autolink: true,
                                                                      space_after_headers: true,
                                                                      fenced_code_blocks: true,
                                                                      tables: true,
@@ -39,7 +39,8 @@ class Page::Renderer
     include Rouge::Plugins::Redcarpet
     include ActionView::Helpers::AssetTagHelper
 
-    def initialize(options = {})
+    def initialize(view_helpers, options = {})
+      @view_helpers = view_helpers
       @options = options
       super()
     end
@@ -49,7 +50,7 @@ class Page::Renderer
     #
     # eg. ![alt text](/path/to/image.png "width=100 height=100")
     def image(link, title, alt)
-      image = image_tag(link, alt: alt)
+      image = @view_helpers.image_tag(link, alt: alt)
       container = content_tag(:div, image, class: ["responsive-image-container"])
 
       if title =~ /width=(\d+)/
