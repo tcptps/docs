@@ -37,16 +37,26 @@ class Page::Renderer
 
   class HTMLWithSyntaxHighlighting < Redcarpet::Render::HTML
     include Rouge::Plugins::Redcarpet
+    include ActionView::Helpers::AssetTagHelper
 
     def initialize(options = {})
       @options = options
       super()
     end
 
+    # Pull out width and height from the title attribute and pass them to the
+    # image_tag helper.
+    #
+    # eg. ![alt text](/path/to/image.png "width=100 height=100")
     def image(link, title, alt)
-      url = Camo::UrlBuilder.build(link) unless link.nil?
+      image = image_tag(link, alt: alt)
+      container = content_tag(:div, image, class: ["responsive-image-container"])
 
-      %{<img src="#{EscapeUtils.escape_html(url || '')}" alt="#{EscapeUtils.escape_html(alt || '')}" class="#{@options[:img_classes]}"/>}
+      if title =~ /width=(\d+)/
+        content_tag(:div, container, style: "max-width: #{$1}px")
+      else
+        container
+      end
     end
 
     def codespan(code)
